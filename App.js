@@ -1,20 +1,40 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { Home } from './Components/Home'
+import { Timer } from './Components/Timer'
+import { Settings } from './Components/Settings'
+
+const Stack = createNativeStackNavigator()
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+    const shadowProps = {
+        left: true,
+        top: true,
+        right: false,
+        bottom: false,
+        shadowColor: '#fff',
+        shadowRadius: 15,
+        shadowOffset: 10,
+        shadowOpacity: 1,
+        elevation: 1
+    }
+    return (
+        <NavigationContainer>
+            <Stack.Navigator
+                screenOptions={{
+                    headerShown: false
+                }}
+            >
+                <Stack.Screen name='Home'>
+                    {(props) => <Home {...props} shadowProps={shadowProps} />}
+                </Stack.Screen>
+                <Stack.Screen name='Timer'>
+                    {(props) => <Timer {...props} shadowProps={shadowProps} />}
+                </Stack.Screen>
+                <Stack.Screen name='Settings'>
+                    {(props) => (<Settings {...props} shadowProps={shadowProps} />)}
+                </Stack.Screen>
+            </Stack.Navigator>
+        </NavigationContainer>
+    )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
