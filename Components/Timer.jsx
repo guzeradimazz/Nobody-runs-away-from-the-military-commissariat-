@@ -1,10 +1,72 @@
 import React, { useState } from 'react'
 import { View, Text, Pressable, StyleSheet, Image } from 'react-native'
-import { InsetShadow } from 'react-native-inset-shadow'
+import Ripple from 'react-native-material-ripple'
 
-export const Timer = ({ navigation, shadowProps }) => {
+export const Timer = ({ navigation }) => {
     const [sound, setSound] = useState(true)
     const [play, setPlay] = useState(false)
+
+    const [prepareSeconds, setPrepareSeconds] = useState(3)
+    const [workSeconds, setWorkSeconds] = useState(30)
+    const [restSeconds, setRestSeconds] = useState(10)
+
+    const [targetSeconds, setTargetSeconds] = useState(0)
+
+    const [tabatas, setTabatas] = useState(1)
+
+    const [fullSeconds, setFullSeconds] = useState(0)
+    const [fullMinutes, setFullMinutes] = useState(0)
+
+    const handleIncrement = () => {
+        if (targetSeconds == 1) {
+            prepareSeconds < 10
+                ? setPrepareSeconds(prepareSeconds + 1)
+                : setPrepareSeconds(prepareSeconds)
+        }
+        if (targetSeconds == 2) {
+            workSeconds < 45
+                ? setWorkSeconds(workSeconds + 1)
+                : setWorkSeconds(workSeconds)
+        }
+        if (targetSeconds == 3) {
+            restSeconds < 15
+                ? setRestSeconds(restSeconds + 1)
+                : setRestSeconds(restSeconds)
+        }
+        if (targetSeconds == 4) {
+            tabatas < 10 ? setTabatas(tabatas + 1) : setTabatas(tabatas)
+        }
+    }
+
+    const handleDecrement = () => {
+        if (targetSeconds == 1) {
+            prepareSeconds > 3
+                ? setPrepareSeconds(prepareSeconds - 1)
+                : setPrepareSeconds(prepareSeconds)
+        }
+        if (targetSeconds == 2) {
+            workSeconds > 15
+                ? setWorkSeconds(workSeconds - 1)
+                : setWorkSeconds(workSeconds)
+        }
+        if (targetSeconds == 3) {
+            restSeconds > 5
+                ? setRestSeconds(restSeconds - 1)
+                : setRestSeconds(restSeconds)
+        }
+        if (targetSeconds == 4) {
+            tabatas > 1 ? setTabatas(tabatas - 1) : setTabatas(tabatas)
+        }
+    }
+
+    const resetTabata = () => {
+        setPlay(false)
+        setPrepareSeconds(3)
+        setWorkSeconds(30)
+        setRestSeconds(10)
+        setTargetSeconds(0)
+        setTabatas(1)
+    }
     return (
         <View style={styles.container}>
             <View style={styles.containerLine}>
@@ -29,7 +91,14 @@ export const Timer = ({ navigation, shadowProps }) => {
             </View>
             <View style={styles.navs}>
                 <View style={styles.nav}>
-                    <Pressable style={styles.timerBtn} onPress={() => {}}>
+                    <Ripple
+                        rippleDuration={1200}
+                        rippleColor={'#58736c'}
+                        style={styles.timerBtn}
+                        onPress={() => {
+                            setTargetSeconds(1)
+                        }}
+                    >
                         <Text
                             style={{
                                 textTransform: 'uppercase',
@@ -39,8 +108,16 @@ export const Timer = ({ navigation, shadowProps }) => {
                         >
                             Prepare
                         </Text>
-                    </Pressable>
-                    <Pressable style={styles.timerBtn} onPress={() => {}}>
+                        <Text>{prepareSeconds}</Text>
+                    </Ripple>
+                    <Ripple
+                        rippleDuration={1200}
+                        rippleColor={'#58736c'}
+                        style={styles.timerBtn}
+                        onPress={() => {
+                            setTargetSeconds(2)
+                        }}
+                    >
                         <Text
                             style={{
                                 textTransform: 'uppercase',
@@ -50,8 +127,16 @@ export const Timer = ({ navigation, shadowProps }) => {
                         >
                             work
                         </Text>
-                    </Pressable>
-                    <Pressable style={styles.timerBtn} onPress={() => {}}>
+                        <Text>{workSeconds}</Text>
+                    </Ripple>
+                    <Ripple
+                        rippleDuration={1200}
+                        rippleColor={'#58736c'}
+                        style={styles.timerBtn}
+                        onPress={() => {
+                            setTargetSeconds(3)
+                        }}
+                    >
                         <Text
                             style={{
                                 textTransform: 'uppercase',
@@ -61,10 +146,18 @@ export const Timer = ({ navigation, shadowProps }) => {
                         >
                             rest
                         </Text>
-                    </Pressable>
+                        <Text>{restSeconds}</Text>
+                    </Ripple>
                 </View>
                 <View style={styles.nav}>
-                    <Pressable style={styles.timerBtn} onPress={() => {}}>
+                    <Ripple
+                        rippleDuration={1200}
+                        rippleColor={'#58736c'}
+                        style={styles.timerBtn}
+                        onPress={() => {
+                            setTargetSeconds(4)
+                        }}
+                    >
                         <Text
                             style={{
                                 textTransform: 'uppercase',
@@ -74,24 +167,54 @@ export const Timer = ({ navigation, shadowProps }) => {
                         >
                             tabatas
                         </Text>
-                    </Pressable>
-                    <Pressable style={styles.timerBtn} onPress={() => {}}>
-                        <Text
-                            style={{
-                                textTransform: 'uppercase',
-                                fontWeight: 'bold',
-                                fontSize: 17
-                            }}
-                        >
-                            cycles
-                        </Text>
-                    </Pressable>
+                        <Text>{tabatas}</Text>
+                    </Ripple>
                 </View>
             </View>
-            <View style={styles.body}></View>
+            <View style={styles.body}>
+                <Text
+                    style={{
+                        textTransform: 'uppercase',
+                        fontWeight: 'bold',
+                        fontSize: 30
+                    }}
+                >
+                    {fullMinutes}:{fullSeconds}
+                </Text>
+            </View>
+            <View style={styles.navLast}>
+                <Ripple
+                    rippleDuration={1200}
+                    rippleColor={'#58736c'}
+                    style={styles.timerBtnLow}
+                    onPress={handleDecrement}
+                >
+                    <Image
+                        style={styles.picture2}
+                        source={{
+                            uri: 'https://cdn-icons-png.flaticon.com/512/2801/2801932.png'
+                        }}
+                    />
+                </Ripple>
+                <Ripple
+                    rippleDuration={1200}
+                    rippleColor={'#58736c'}
+                    style={styles.timerBtnLow}
+                    onPress={handleIncrement}
+                >
+                    <Image
+                        style={styles.picture2}
+                        source={{
+                            uri: 'https://cdn-icons-png.flaticon.com/512/748/748113.png'
+                        }}
+                    />
+                </Ripple>
+            </View>
             <View style={styles.navLast}>
                 {play ? (
-                    <Pressable
+                    <Ripple
+                        rippleDuration={1200}
+                        rippleColor={'#58736c'}
                         style={styles.timerBtnLow}
                         onPress={() => {
                             setPlay(!play)
@@ -103,9 +226,11 @@ export const Timer = ({ navigation, shadowProps }) => {
                                 uri: 'https://cdn-icons-png.flaticon.com/512/2920/2920686.png'
                             }}
                         />
-                    </Pressable>
+                    </Ripple>
                 ) : (
-                    <Pressable
+                    <Ripple
+                        rippleDuration={1200}
+                        rippleColor={'#58736c'}
                         style={styles.timerBtnLow}
                         onPress={() => {
                             setPlay(!play)
@@ -117,18 +242,25 @@ export const Timer = ({ navigation, shadowProps }) => {
                                 uri: 'https://cdn-icons-png.flaticon.com/512/5577/5577228.png'
                             }}
                         />
-                    </Pressable>
+                    </Ripple>
                 )}
-                <Pressable style={styles.timerBtnLow} onPress={() => {}}>
+                <Ripple
+                    rippleDuration={1200}
+                    rippleColor={'#58736c'}
+                    style={styles.timerBtnLow}
+                    onPress={resetTabata}
+                >
                     <Image
                         style={styles.picture}
                         source={{
                             uri: 'https://cdn-icons-png.flaticon.com/512/2618/2618245.png'
                         }}
                     />
-                </Pressable>
+                </Ripple>
                 {sound ? (
-                    <Pressable
+                    <Ripple
+                        rippleDuration={1200}
+                        rippleColor={'#58736c'}
                         style={styles.timerBtnLow}
                         onPress={() => {
                             setSound(!sound)
@@ -140,9 +272,11 @@ export const Timer = ({ navigation, shadowProps }) => {
                                 uri: 'https://cdn-icons-png.flaticon.com/512/727/727240.png'
                             }}
                         />
-                    </Pressable>
+                    </Ripple>
                 ) : (
-                    <Pressable
+                    <Ripple
+                        rippleDuration={1200}
+                        rippleColor={'#58736c'}
                         style={styles.timerBtnLow}
                         onPress={() => {
                             setSound(!sound)
@@ -154,7 +288,7 @@ export const Timer = ({ navigation, shadowProps }) => {
                                 uri: 'https://cdn-icons-png.flaticon.com/512/59/59284.png'
                             }}
                         />
-                    </Pressable>
+                    </Ripple>
                 )}
             </View>
         </View>
@@ -176,8 +310,8 @@ const styles = StyleSheet.create({
     },
     timerBtn: {
         backgroundColor: '#e3f6fa',
-        height: 40,
-        width: 90,
+        height: 60,
+        width: 100,
         shadowColor: '#000',
         shadowOffset: { width: 3, height: 3 },
         shadowOpacity: 0.6,
@@ -190,13 +324,15 @@ const styles = StyleSheet.create({
         width: '80%',
         borderWidth: 1,
         height: 300,
-        marginTop: -100
+        marginTop: 0,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     navs: {
         flexDirection: 'column',
         width: '80%',
         height: '20%',
-        marginBottom: 30,
+        marginTop: 80,
         justifyContent: 'center'
     },
     navLast: {

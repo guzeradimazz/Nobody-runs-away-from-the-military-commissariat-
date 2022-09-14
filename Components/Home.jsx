@@ -1,8 +1,7 @@
 import React from 'react'
 import { View, StyleSheet, Text, Pressable, Image } from 'react-native'
-import InsetShadow from 'react-native-inset-shadow'
 
-export const Home = ({ navigation, shadowProps }) => {
+export const Home = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.text}>Tabata timer</Text>
@@ -11,11 +10,9 @@ export const Home = ({ navigation, shadowProps }) => {
                 onPress={() => navigation.navigate('Timer')}
             >
                 <View style={{ justifyContent: 'center' }}>
-                    <InsetShadow {...shadowProps}>
-                        <Text style={styles.textLtl}>
-                            Get started coach potato!
-                        </Text>
-                    </InsetShadow>
+                    <Text style={styles.textLtl}>
+                        Get started coach potato!
+                    </Text>
                 </View>
             </Pressable>
 
@@ -24,14 +21,12 @@ export const Home = ({ navigation, shadowProps }) => {
                 onPress={() => navigation.navigate('Settings')}
             >
                 <View style={{ justifyContent: 'center' }}>
-                    <InsetShadow {...shadowProps}>
-                        <Image
-                            style={styles.picture}
-                            source={{
-                                uri: 'https://cdn-icons-png.flaticon.com/512/668/668293.png'
-                            }}
-                        />
-                    </InsetShadow>
+                    <Image
+                        style={styles.picture}
+                        source={{
+                            uri: 'https://cdn-icons-png.flaticon.com/512/668/668293.png'
+                        }}
+                    />
                 </View>
             </Pressable>
         </View>
