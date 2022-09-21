@@ -1,5 +1,12 @@
-import React, { useState } from 'react'
-import { View, Text, Pressable, StyleSheet, Image } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import {
+    View,
+    Text,
+    Pressable,
+    StyleSheet,
+    Image,
+    Dimensions
+} from 'react-native'
 import Ripple from 'react-native-material-ripple'
 
 export const Timer = ({ navigation }) => {
@@ -12,52 +19,97 @@ export const Timer = ({ navigation }) => {
 
     const [targetSeconds, setTargetSeconds] = useState(0)
 
-    const [tabatas, setTabatas] = useState(1)
+    const [tabatas, setTabatas] = useState(2)
 
     const [fullSeconds, setFullSeconds] = useState(0)
     const [fullMinutes, setFullMinutes] = useState(0)
 
+    const calculateTime = () => {
+        const fullSecondsTemp =
+            prepareSeconds + tabatas * (workSeconds + restSeconds)
+        const temp1 = Number((fullSecondsTemp / 60).toString().split('.')[0])
+        const temp2 = Number(fullSecondsTemp - temp1 * 60)
+        setFullSeconds(temp2)
+        setFullMinutes(temp1)
+    }
     const handleIncrement = () => {
         if (targetSeconds == 1) {
             prepareSeconds < 10
-                ? setPrepareSeconds(prepareSeconds + 1)
+                ? setPrepareSeconds((prev) => prev + 1)
                 : setPrepareSeconds(prepareSeconds)
+            calculateTime()
         }
         if (targetSeconds == 2) {
             workSeconds < 45
-                ? setWorkSeconds(workSeconds + 1)
+                ? setWorkSeconds((prev) => prev + 1)
                 : setWorkSeconds(workSeconds)
+            calculateTime()
         }
         if (targetSeconds == 3) {
             restSeconds < 15
-                ? setRestSeconds(restSeconds + 1)
+                ? setRestSeconds((prev) => prev + 1)
                 : setRestSeconds(restSeconds)
+            calculateTime()
         }
         if (targetSeconds == 4) {
-            tabatas < 10 ? setTabatas(tabatas + 1) : setTabatas(tabatas)
+            tabatas < 10 ? setTabatas((prev) => prev + 1) : setTabatas(tabatas)
+            calculateTime()
         }
     }
-
     const handleDecrement = () => {
         if (targetSeconds == 1) {
             prepareSeconds > 3
-                ? setPrepareSeconds(prepareSeconds - 1)
+                ? setPrepareSeconds((prev) => prev - 1)
                 : setPrepareSeconds(prepareSeconds)
+            calculateTime()
         }
         if (targetSeconds == 2) {
             workSeconds > 15
-                ? setWorkSeconds(workSeconds - 1)
+                ? setWorkSeconds((prev) => prev - 1)
                 : setWorkSeconds(workSeconds)
+            calculateTime()
         }
         if (targetSeconds == 3) {
             restSeconds > 5
-                ? setRestSeconds(restSeconds - 1)
+                ? setRestSeconds((prev) => prev - 1)
                 : setRestSeconds(restSeconds)
+            calculateTime()
         }
         if (targetSeconds == 4) {
-            tabatas > 1 ? setTabatas(tabatas - 1) : setTabatas(tabatas)
+            tabatas > 1 ? setTabatas((prev) => prev - 1) : setTabatas(tabatas)
+            calculateTime()
         }
     }
+
+    useEffect(() => {
+        calculateTime()
+    }, [prepareSeconds, workSeconds, restSeconds, tabatas])
+    useEffect(() => {
+        calculateTime()
+    }, [])
+
+    const updateInterval = () => {
+        if (fullSeconds > 0) {
+            setFullSeconds((prev) => prev - 1)
+        } else if (fullMinutes >= 1 && fullSeconds == 0) {
+            setFullMinutes((prev) => prev - 1)
+            setFullSeconds(59)
+        }else if(fullMinutes == 0 && fullSeconds == 0){
+            setPlay(!play)
+            calculateTime()
+            alert('complete')
+        }
+    }
+    useEffect(() => {
+        let interval
+        if (play) {
+            interval = setInterval(updateInterval, 300)
+        }
+        if (!play) clearInterval(interval)
+        return () => {
+            clearInterval(interval)
+        }
+    }, [play, fullSeconds])
 
     const resetTabata = () => {
         setPlay(false)
@@ -65,7 +117,8 @@ export const Timer = ({ navigation }) => {
         setWorkSeconds(30)
         setRestSeconds(10)
         setTargetSeconds(0)
-        setTabatas(1)
+        setTabatas(2)
+        calculateTime()
     }
     return (
         <View style={styles.container}>
