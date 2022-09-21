@@ -8,6 +8,7 @@ import {
     Dimensions
 } from 'react-native'
 import Ripple from 'react-native-material-ripple'
+import CircularProgress from 'react-native-circular-progress-indicator'
 
 export const Timer = ({ navigation }) => {
     const [sound, setSound] = useState(true)
@@ -24,6 +25,12 @@ export const Timer = ({ navigation }) => {
     const [fullSeconds, setFullSeconds] = useState(0)
     const [fullMinutes, setFullMinutes] = useState(0)
 
+    const [timerPercentageUp, setTimerPercentageUp] = useState(1)
+    const [timerPercentageLow, setTimerPercentageLow] = useState(1)
+    const [timerPercentage, setTimerPercentage] = useState(100)
+
+    const [myRender, setMyRender] = useState(0)
+
     const calculateTime = () => {
         const fullSecondsTemp =
             prepareSeconds + tabatas * (workSeconds + restSeconds)
@@ -31,6 +38,15 @@ export const Timer = ({ navigation }) => {
         const temp2 = Number(fullSecondsTemp - temp1 * 60)
         setFullSeconds(temp2)
         setFullMinutes(temp1)
+        if (fullMinutes && fullSeconds) {
+            setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
+            setTimerPercentageLow(fullMinutes * 60 + fullSeconds)
+            setTimerPercentage(
+                Number((timerPercentageUp / timerPercentageLow) * 100).toFixed(
+                    0
+                )
+            )
+        }
     }
     const handleIncrement = () => {
         if (targetSeconds == 1) {
@@ -84,17 +100,30 @@ export const Timer = ({ navigation }) => {
     useEffect(() => {
         calculateTime()
     }, [prepareSeconds, workSeconds, restSeconds, tabatas])
+    const tempFunc = ()=>{
+        setMyRender(1)
+        calculateTime()
+    }
     useEffect(() => {
         calculateTime()
+        tempFunc()
     }, [])
-
+    useEffect(() => {
+        console.log('===')
+        console.log(fullMinutes + ':' + fullSeconds)
+        console.log(timerPercentageUp)
+        console.log(timerPercentageLow)
+        console.log(timerPercentage)
+    })
     const updateInterval = () => {
         if (fullSeconds > 0) {
             setFullSeconds((prev) => prev - 1)
+            setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
         } else if (fullMinutes >= 1 && fullSeconds == 0) {
             setFullMinutes((prev) => prev - 1)
             setFullSeconds(59)
-        }else if(fullMinutes == 0 && fullSeconds == 0){
+            setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
+        } else if (fullMinutes == 0 && fullSeconds == 0) {
             setPlay(!play)
             calculateTime()
             alert('complete')
@@ -103,7 +132,7 @@ export const Timer = ({ navigation }) => {
     useEffect(() => {
         let interval
         if (play) {
-            interval = setInterval(updateInterval, 300)
+            interval = setInterval(updateInterval, 1000)
         }
         if (!play) clearInterval(interval)
         return () => {
@@ -120,6 +149,7 @@ export const Timer = ({ navigation }) => {
         setTabatas(2)
         calculateTime()
     }
+
     return (
         <View style={styles.container}>
             <View style={styles.containerLine}>
@@ -145,6 +175,7 @@ export const Timer = ({ navigation }) => {
             <View style={styles.navs}>
                 <View style={styles.nav}>
                     <Ripple
+                        disabled={play ? true : false}
                         rippleDuration={1200}
                         rippleColor={'#58736c'}
                         style={styles.timerBtn}
@@ -164,6 +195,7 @@ export const Timer = ({ navigation }) => {
                         <Text>{prepareSeconds}</Text>
                     </Ripple>
                     <Ripple
+                        disabled={play ? true : false}
                         rippleDuration={1200}
                         rippleColor={'#58736c'}
                         style={styles.timerBtn}
@@ -183,6 +215,7 @@ export const Timer = ({ navigation }) => {
                         <Text>{workSeconds}</Text>
                     </Ripple>
                     <Ripple
+                        disabled={play ? true : false}
                         rippleDuration={1200}
                         rippleColor={'#58736c'}
                         style={styles.timerBtn}
@@ -204,6 +237,7 @@ export const Timer = ({ navigation }) => {
                 </View>
                 <View style={styles.nav}>
                     <Ripple
+                        disabled={play ? true : false}
                         rippleDuration={1200}
                         rippleColor={'#58736c'}
                         style={styles.timerBtn}
@@ -232,11 +266,23 @@ export const Timer = ({ navigation }) => {
                         fontSize: 30
                     }}
                 >
-                    {fullMinutes}:{fullSeconds}
+                    <CircularProgress
+                        radius={160}
+                        value={timerPercentage ? timerPercentage : 0}
+                        textColor='#222'
+                        fontSize={30}
+                        title={`${fullMinutes}:${fullSeconds}`}
+                        titleColor={'#000'}
+                        titleStyle={{ fontWeight: 'bold' }}
+                        valueSuffix={'%'}
+                        inActiveStrokeColor='red'
+                        inActiveStrokeOpacity={0.2}
+                    />
                 </Text>
             </View>
             <View style={styles.navLast}>
                 <Ripple
+                    disabled={play ? true : false}
                     rippleDuration={1200}
                     rippleColor={'#58736c'}
                     style={styles.timerBtnLow}
@@ -250,6 +296,7 @@ export const Timer = ({ navigation }) => {
                     />
                 </Ripple>
                 <Ripple
+                    disabled={play ? true : false}
                     rippleDuration={1200}
                     rippleColor={'#58736c'}
                     style={styles.timerBtnLow}
@@ -375,7 +422,6 @@ const styles = StyleSheet.create({
     },
     body: {
         width: '80%',
-        borderWidth: 1,
         height: 300,
         marginTop: 0,
         justifyContent: 'center',
