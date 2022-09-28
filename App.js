@@ -4,37 +4,47 @@ import { Home } from './Components/Home'
 import { Timer } from './Components/Timer'
 import { Settings } from './Components/Settings'
 
+import { useState, useEffect } from 'react'
+import { EventRegister } from 'react-native-event-listeners'
+import { ThemeContext } from './utils/themeContext'
+import { theme } from './utils/themeContext'
+
 const Stack = createNativeStackNavigator()
 
 export default function App() {
-    const shadowProps = {
-        left: true,
-        top: true,
-        right: false,
-        bottom: false,
-        shadowColor: '#fff',
-        shadowRadius: 15,
-        shadowOffset: 10,
-        shadowOpacity: 1,
-        elevation: 1
-    }
+    const [mode, setMode] = useState(false)
+
+    useEffect(() => {
+        let eventListener = EventRegister.addEventListener(
+            'changeTheme',
+            (data) => {
+                setMode(data)
+            }
+        )
+        return () => {
+            EventRegister.removeEventListener(eventListener)
+        }
+    })
+
     return (
-        <NavigationContainer>
-            <Stack.Navigator
-                screenOptions={{
-                    headerShown: false
-                }}
-            >
-                <Stack.Screen name='Home'>
-                    {(props) => <Home {...props} shadowProps={shadowProps} />}
-                </Stack.Screen>
-                <Stack.Screen name='Timer'>
-                    {(props) => <Timer {...props} shadowProps={shadowProps} />}
-                </Stack.Screen>
-                <Stack.Screen name='Settings'>
-                    {(props) => (<Settings {...props} shadowProps={shadowProps} />)}
-                </Stack.Screen>
-            </Stack.Navigator>
-        </NavigationContainer>
+        <ThemeContext.Provider value={mode ? theme.ligth : theme.dark}>
+            <NavigationContainer>
+                <Stack.Navigator
+                    screenOptions={{
+                        headerShown: false
+                    }}
+                >
+                    <Stack.Screen name='Home'>
+                        {(props) => <Home {...props} />}
+                    </Stack.Screen>
+                    <Stack.Screen name='Timer'>
+                        {(props) => <Timer {...props} />}
+                    </Stack.Screen>
+                    <Stack.Screen name='Settings'>
+                        {(props) => <Settings {...props} />}
+                    </Stack.Screen>
+                </Stack.Navigator>
+            </NavigationContainer>
+        </ThemeContext.Provider>
     )
 }

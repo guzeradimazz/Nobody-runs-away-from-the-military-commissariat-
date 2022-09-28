@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import {
     View,
     Text,
@@ -9,8 +9,11 @@ import {
 } from 'react-native'
 import Ripple from 'react-native-material-ripple'
 import CircularProgress from 'react-native-circular-progress-indicator'
+import { ThemeContext } from '../utils/themeContext'
 
 export const Timer = ({ navigation }) => {
+    const theme = useContext(ThemeContext)
+
     const [sound, setSound] = useState(true)
     const [play, setPlay] = useState(false)
 
@@ -48,28 +51,38 @@ export const Timer = ({ navigation }) => {
             )
         }
     }
+
+    const tempFunc = () => {
+        setMyRender(1)
+        calculateTime()
+    }
+
     const handleIncrement = () => {
         if (targetSeconds == 1) {
             prepareSeconds < 10
                 ? setPrepareSeconds((prev) => prev + 1)
                 : setPrepareSeconds(prepareSeconds)
             calculateTime()
+            tempFunc()
         }
         if (targetSeconds == 2) {
             workSeconds < 45
                 ? setWorkSeconds((prev) => prev + 1)
                 : setWorkSeconds(workSeconds)
             calculateTime()
+            tempFunc()
         }
         if (targetSeconds == 3) {
             restSeconds < 15
                 ? setRestSeconds((prev) => prev + 1)
                 : setRestSeconds(restSeconds)
             calculateTime()
+            tempFunc()
         }
         if (targetSeconds == 4) {
             tabatas < 10 ? setTabatas((prev) => prev + 1) : setTabatas(tabatas)
             calculateTime()
+            tempFunc()
         }
     }
     const handleDecrement = () => {
@@ -78,61 +91,78 @@ export const Timer = ({ navigation }) => {
                 ? setPrepareSeconds((prev) => prev - 1)
                 : setPrepareSeconds(prepareSeconds)
             calculateTime()
+            tempFunc()
         }
         if (targetSeconds == 2) {
             workSeconds > 15
                 ? setWorkSeconds((prev) => prev - 1)
                 : setWorkSeconds(workSeconds)
             calculateTime()
+            tempFunc()
         }
         if (targetSeconds == 3) {
             restSeconds > 5
                 ? setRestSeconds((prev) => prev - 1)
                 : setRestSeconds(restSeconds)
             calculateTime()
+            tempFunc()
         }
         if (targetSeconds == 4) {
             tabatas > 1 ? setTabatas((prev) => prev - 1) : setTabatas(tabatas)
             calculateTime()
+            tempFunc()
         }
     }
 
     useEffect(() => {
         calculateTime()
     }, [prepareSeconds, workSeconds, restSeconds, tabatas])
-    const tempFunc = ()=>{
-        setMyRender(1)
-        calculateTime()
-    }
+
     useEffect(() => {
         calculateTime()
         tempFunc()
     }, [])
+
     useEffect(() => {
-        console.log('===')
-        console.log(fullMinutes + ':' + fullSeconds)
-        console.log(timerPercentageUp)
-        console.log(timerPercentageLow)
-        console.log(timerPercentage)
-    })
+        calculateTime()
+    }, [myRender])
+
+    // useEffect(() => {
+    //     console.log('===')
+    //     console.log(fullMinutes + ':' + fullSeconds)
+    //     console.log(timerPercentageUp)
+    //     console.log(timerPercentageLow)
+    //     console.log(timerPercentage)
+    // })
     const updateInterval = () => {
         if (fullSeconds > 0) {
             setFullSeconds((prev) => prev - 1)
             setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
+            setTimerPercentage(
+                Number((timerPercentageUp / timerPercentageLow) * 100).toFixed(
+                    0
+                )
+            )
         } else if (fullMinutes >= 1 && fullSeconds == 0) {
             setFullMinutes((prev) => prev - 1)
             setFullSeconds(59)
             setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
+            setTimerPercentage(
+                Number((timerPercentageUp / timerPercentageLow) * 100).toFixed(
+                    0
+                )
+            )
         } else if (fullMinutes == 0 && fullSeconds == 0) {
             setPlay(!play)
             calculateTime()
             alert('complete')
+            setMyRender(2)
         }
     }
     useEffect(() => {
         let interval
         if (play) {
-            interval = setInterval(updateInterval, 1000)
+            interval = setInterval(updateInterval, 300)
         }
         if (!play) clearInterval(interval)
         return () => {
@@ -151,10 +181,13 @@ export const Timer = ({ navigation }) => {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
             <View style={styles.containerLine}>
                 <Pressable
-                    style={styles.mainScreenButton}
+                    style={[
+                        styles.mainScreenButton,
+                        { backgroundColor: theme.background }
+                    ]}
                     onPress={() => navigation.navigate('Home')}
                 >
                     <View
@@ -173,18 +206,24 @@ export const Timer = ({ navigation }) => {
                 </Pressable>
             </View>
             <View style={styles.navs}>
-                <View style={styles.nav}>
+                <View
+                    style={[styles.nav, { backgroundColor: theme.background }]}
+                >
                     <Ripple
                         disabled={play ? true : false}
                         rippleDuration={1200}
-                        rippleColor={'#58736c'}
-                        style={styles.timerBtn}
+                        rippleColor={theme.rippleColor}
+                        style={[
+                            styles.timerBtn,
+                            { backgroundColor: theme.background }
+                        ]}
                         onPress={() => {
                             setTargetSeconds(1)
                         }}
                     >
                         <Text
                             style={{
+                                color: theme.color,
                                 textTransform: 'uppercase',
                                 fontWeight: 'bold',
                                 fontSize: 17
@@ -192,19 +231,25 @@ export const Timer = ({ navigation }) => {
                         >
                             Prepare
                         </Text>
-                        <Text>{prepareSeconds}</Text>
+                        <Text style={{ color: theme.color }}>
+                            {prepareSeconds}
+                        </Text>
                     </Ripple>
                     <Ripple
                         disabled={play ? true : false}
                         rippleDuration={1200}
-                        rippleColor={'#58736c'}
-                        style={styles.timerBtn}
+                        rippleColor={theme.rippleColor}
+                        style={[
+                            styles.timerBtn,
+                            { backgroundColor: theme.background }
+                        ]}
                         onPress={() => {
                             setTargetSeconds(2)
                         }}
                     >
                         <Text
                             style={{
+                                color: theme.color,
                                 textTransform: 'uppercase',
                                 fontWeight: 'bold',
                                 fontSize: 17
@@ -212,19 +257,25 @@ export const Timer = ({ navigation }) => {
                         >
                             work
                         </Text>
-                        <Text>{workSeconds}</Text>
+                        <Text style={{ color: theme.color }}>
+                            {workSeconds}
+                        </Text>
                     </Ripple>
                     <Ripple
                         disabled={play ? true : false}
                         rippleDuration={1200}
-                        rippleColor={'#58736c'}
-                        style={styles.timerBtn}
+                        rippleColor={theme.rippleColor}
+                        style={[
+                            styles.timerBtn,
+                            { backgroundColor: theme.background }
+                        ]}
                         onPress={() => {
                             setTargetSeconds(3)
                         }}
                     >
                         <Text
                             style={{
+                                color: theme.color,
                                 textTransform: 'uppercase',
                                 fontWeight: 'bold',
                                 fontSize: 17
@@ -232,21 +283,29 @@ export const Timer = ({ navigation }) => {
                         >
                             rest
                         </Text>
-                        <Text>{restSeconds}</Text>
+                        <Text style={{ color: theme.color }}>
+                            {restSeconds}
+                        </Text>
                     </Ripple>
                 </View>
-                <View style={styles.nav}>
+                <View
+                    style={[styles.nav, { backgroundColor: theme.background }]}
+                >
                     <Ripple
                         disabled={play ? true : false}
                         rippleDuration={1200}
-                        rippleColor={'#58736c'}
-                        style={styles.timerBtn}
+                        rippleColor={theme.rippleColor}
+                        style={[
+                            styles.timerBtn,
+                            { backgroundColor: theme.background }
+                        ]}
                         onPress={() => {
                             setTargetSeconds(4)
                         }}
                     >
                         <Text
                             style={{
+                                color: theme.color,
                                 textTransform: 'uppercase',
                                 fontWeight: 'bold',
                                 fontSize: 17
@@ -254,7 +313,7 @@ export const Timer = ({ navigation }) => {
                         >
                             tabatas
                         </Text>
-                        <Text>{tabatas}</Text>
+                        <Text style={{ color: theme.color }}>{tabatas}</Text>
                     </Ripple>
                 </View>
             </View>
@@ -272,7 +331,7 @@ export const Timer = ({ navigation }) => {
                         textColor='#222'
                         fontSize={30}
                         title={`${fullMinutes}:${fullSeconds}`}
-                        titleColor={'#000'}
+                        titleColor={theme.color}
                         titleStyle={{ fontWeight: 'bold' }}
                         valueSuffix={'%'}
                         inActiveStrokeColor='red'
@@ -284,8 +343,11 @@ export const Timer = ({ navigation }) => {
                 <Ripple
                     disabled={play ? true : false}
                     rippleDuration={1200}
-                    rippleColor={'#58736c'}
-                    style={styles.timerBtnLow}
+                    rippleColor={theme.rippleColor}
+                    style={[
+                        styles.timerBtnLow,
+                        { backgroundColor: theme.background }
+                    ]}
                     onPress={handleDecrement}
                 >
                     <Image
@@ -298,8 +360,11 @@ export const Timer = ({ navigation }) => {
                 <Ripple
                     disabled={play ? true : false}
                     rippleDuration={1200}
-                    rippleColor={'#58736c'}
-                    style={styles.timerBtnLow}
+                    rippleColor={theme.rippleColor}
+                    style={[
+                        styles.timerBtnLow,
+                        { backgroundColor: theme.background }
+                    ]}
                     onPress={handleIncrement}
                 >
                     <Image
@@ -314,8 +379,11 @@ export const Timer = ({ navigation }) => {
                 {play ? (
                     <Ripple
                         rippleDuration={1200}
-                        rippleColor={'#58736c'}
-                        style={styles.timerBtnLow}
+                        rippleColor={theme.rippleColor}
+                        style={[
+                            styles.timerBtnLow,
+                            { backgroundColor: theme.background }
+                        ]}
                         onPress={() => {
                             setPlay(!play)
                         }}
@@ -330,8 +398,11 @@ export const Timer = ({ navigation }) => {
                 ) : (
                     <Ripple
                         rippleDuration={1200}
-                        rippleColor={'#58736c'}
-                        style={styles.timerBtnLow}
+                        rippleColor={theme.rippleColor}
+                        style={[
+                            styles.timerBtnLow,
+                            { backgroundColor: theme.background }
+                        ]}
                         onPress={() => {
                             setPlay(!play)
                         }}
@@ -346,8 +417,11 @@ export const Timer = ({ navigation }) => {
                 )}
                 <Ripple
                     rippleDuration={1200}
-                    rippleColor={'#58736c'}
-                    style={styles.timerBtnLow}
+                    rippleColor={theme.rippleColor}
+                    style={[
+                        styles.timerBtnLow,
+                        { backgroundColor: theme.background }
+                    ]}
                     onPress={resetTabata}
                 >
                     <Image
@@ -360,8 +434,11 @@ export const Timer = ({ navigation }) => {
                 {sound ? (
                     <Ripple
                         rippleDuration={1200}
-                        rippleColor={'#58736c'}
-                        style={styles.timerBtnLow}
+                        rippleColor={theme.rippleColor}
+                        style={[
+                            styles.timerBtnLow,
+                            { backgroundColor: theme.background }
+                        ]}
                         onPress={() => {
                             setSound(!sound)
                         }}
@@ -376,8 +453,11 @@ export const Timer = ({ navigation }) => {
                 ) : (
                     <Ripple
                         rippleDuration={1200}
-                        rippleColor={'#58736c'}
-                        style={styles.timerBtnLow}
+                        rippleColor={theme.rippleColor}
+                        style={[
+                            styles.timerBtnLow,
+                            { backgroundColor: theme.background }
+                        ]}
                         onPress={() => {
                             setSound(!sound)
                         }}

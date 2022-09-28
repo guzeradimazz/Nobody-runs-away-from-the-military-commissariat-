@@ -1,16 +1,19 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { View, StyleSheet, Text, Pressable, Image } from 'react-native'
+import { ThemeContext } from '../utils/themeContext'
 
 export const Home = ({ navigation }) => {
+
+    const theme = useContext(ThemeContext)
     return (
-        <View style={styles.container}>
-            <Text style={styles.text}>Tabata timer</Text>
+        <View style={[styles.container,{backgroundColor:theme.background}]}>
+            <Text style={[styles.text,{color:theme.color}]}>Tabata timer</Text>
             <Pressable
-                style={styles.mainScreenButton}
+                style={[styles.mainScreenButton,{backgroundColor:theme.background,}]}
                 onPress={() => navigation.navigate('Timer')}
             >
                 <View style={{ justifyContent: 'center' }}>
-                    <Text style={styles.textLtl}>
+                    <Text style={[styles.textLtl,{color:theme.color}]}>
                         Get started coach potato!
                     </Text>
                 </View>
@@ -36,7 +39,6 @@ export const Home = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#e3f6fa',
         alignItems: 'center',
         justifyContent: 'center'
     },
@@ -53,7 +55,6 @@ const styles = StyleSheet.create({
         borderRadius: 9
     },
     mainScreenButton: {
-        backgroundColor: '#e3f6fa',
         width: '80%',
         shadowColor: '#000',
         shadowOffset: { width: 3, height: 3 },
