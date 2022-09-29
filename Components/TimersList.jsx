@@ -6,20 +6,34 @@ import {
     Pressable,
     Image,
     FlatList,
-    ActivityIndicator,
     RefreshControl,
-    TouchableOpacity
+    TouchableOpacity,
+    TextInput
 } from 'react-native'
 import { ThemeContext } from '../utils/themeContext'
 import axios from 'axios'
 import { Loading } from './Loading'
+import { SQLite } from 'react-native-sqlite-storage'
+
+const db = SQLite.openDatabase(
+    {
+        name: 'MainDB',
+        location: 'default'
+    },
+    () => {},
+    (error) => {
+        console.log(error)
+    }
+)
 
 export const TimersList = ({ navigation }) => {
     const theme = useContext(ThemeContext)
 
+    const [timerName, setTimerName] = useState('')
     const [isLoading, setIsLoading] = useState(true)
     const [timers, setTimers] = useState([])
 
+    const addTimer = () => {}
     const fetchTimers = () => {
         setIsLoading(true)
         axios
@@ -80,6 +94,22 @@ export const TimersList = ({ navigation }) => {
                         alignItems: 'center'
                     }}
                 >
+                    <View
+                        style={{
+                            borderColor: '#fff',
+                            borderWidth: 1,
+                            width: '90%'
+                        }}
+                    >
+                        <TextInput
+                            value={timerName}
+                            onChangeText={setTimerName}
+                            style={{ borderColor: '#fff', borderWidth: 1 }}
+                        />
+                        <Pressable onPress={addTimer}>
+                            <Text>Add</Text>
+                        </Pressable>
+                    </View>
                     <FlatList
                         display='flex'
                         flexDirection='column'
