@@ -10,7 +10,7 @@ export const Home = ({ navigation }) => {
             <Text style={[styles.text,{color:theme.color}]}>Tabata timer</Text>
             <Pressable
                 style={[styles.mainScreenButton,{backgroundColor:theme.background,}]}
-                onPress={() => navigation.navigate('Timer')}
+                onPress={() => navigation.navigate('TimersList')}
             >
                 <View style={{ justifyContent: 'center' }}>
                     <Text style={[styles.textLtl,{color:theme.color}]}>
