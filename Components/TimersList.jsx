@@ -11,20 +11,10 @@ import {
     TextInput
 } from 'react-native'
 import { ThemeContext } from '../utils/themeContext'
-import axios from 'axios'
 import { Loading } from './Loading'
-import { SQLite } from 'react-native-sqlite-storage'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import ColorPicker from 'react-native-color-picker-ios'
 
-const db = SQLite.openDatabase(
-    {
-        name: 'MainDB',
-        location: 'default'
-    },
-    () => {},
-    (error) => {
-        console.log(error)
-    }
-)
 
 export const TimersList = ({ navigation }) => {
     const theme = useContext(ThemeContext)
@@ -33,22 +23,56 @@ export const TimersList = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(true)
     const [timers, setTimers] = useState([])
 
-    const addTimer = () => {}
-    const fetchTimers = () => {
-        setIsLoading(true)
-        axios
-            .get('https://633472fc301bbc0a6211dfea.mockapi.io/Timers')
-            .then(({ data }) => {
-                setTimers(data)
-            })
-            .catch((err) => {
-                console.log(err)
-                alert('Error to get timers!!!')
-            })
-            .finally(() => setIsLoading(false))
+    useEffect(() => {
+        console.log(timers)
+    })
+
+    const selectColor = () => {
+        ColorPicker.showColorPicker(
+            (color) => {
+                console.log(color)
+            }
+        )
+    }
+    const addTimer = async () => {
+        if (timerName) {
+            const id = 'id' + Math.random().toString(16).slice(2)
+            const newTimer = {
+                name: timerName,
+                prepareSeconds: 3,
+                workSeconds: 30,
+                restSeconds: 7,
+                tabatas: 2,
+                id: id
+            }
+
+            try {
+                timers
+                    ? setTimers([...timers, newTimer])
+                    : setTimers([newTimer])
+                const output = JSON.stringify(timers)
+                await AsyncStorage.setItem('timers', output)
+                setTimerName('')
+            } catch (error) {
+                console.log(error)
+            }
+        } else alert('Input is empty')
+    }
+    const getTimers = async () => {
+        try {
+            const data = await AsyncStorage.getItem('timers')
+            const output = JSON.parse(data)
+            setTimers(output)
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     useEffect(() => {
+        async function fetchTimers() {
+            await getTimers()
+            setIsLoading(false)
+        }
         fetchTimers()
     }, [])
 
@@ -96,18 +120,56 @@ export const TimersList = ({ navigation }) => {
                 >
                     <View
                         style={{
-                            borderColor: '#fff',
-                            borderWidth: 1,
-                            width: '90%'
+                            width: '90%',
+                            alignItems: 'center'
                         }}
                     >
-                        <TextInput
-                            value={timerName}
-                            onChangeText={setTimerName}
-                            style={{ borderColor: '#fff', borderWidth: 1 }}
-                        />
-                        <Pressable onPress={addTimer}>
-                            <Text>Add</Text>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                width: '100%'
+                            }}
+                        >
+                            <TextInput
+                                value={timerName}
+                                onChangeText={(data) => setTimerName(data)}
+                                style={styles.input}
+                            />
+                            <Pressable
+                                onPress={selectColor}
+                                style={{
+                                    backgroundColor: '#fff',
+                                    height: 50,
+                                    borderRadius: 5,
+                                    justifyContent: 'center',
+                                    width: '20%'
+                                }}
+                            >
+                                <Text style={{ textAlign: 'center' }}>
+                                    Color
+                                </Text>
+                            </Pressable>
+                        </View>
+                        <Pressable
+                            onPress={addTimer}
+                            style={{
+                                backgroundColor: theme.background,
+                                alignItems: 'center',
+                                width: '100%'
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: theme.color,
+                                    padding: 10,
+                                    fontSize: 22
+                                }}
+                                t
+                            >
+                                Add
+                            </Text>
                         </Pressable>
                     </View>
                     <FlatList
@@ -118,12 +180,12 @@ export const TimersList = ({ navigation }) => {
                         marginBottom={50}
                         width={350}
                         height={100}
-                        refreshControl={
-                            <RefreshControl
-                                refreshing={isLoading}
-                                onRefresh={fetchTimers}
-                            />
-                        }
+                        // refreshControl={
+                        //     <RefreshControl
+                        //         refreshing={isLoading}
+                        //         onRefresh={fetchTimers}
+                        //     />
+                        // }
                         extraData={timers}
                         data={timers}
                         renderItem={({ item }) => (
@@ -161,6 +223,16 @@ export const TimersList = ({ navigation }) => {
 }
 
 const styles = StyleSheet.create({
+    input: {
+        padding: 10,
+        width: '75%',
+        height: 50,
+        marginTop: 20,
+        fontSize: 22,
+        backgroundColor: '#fff',
+        marginBottom: 20,
+        borderRadius: 5
+    },
     listItemWrapper: {
         width: '100%',
         height: '100%',

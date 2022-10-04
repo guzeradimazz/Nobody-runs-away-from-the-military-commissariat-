@@ -335,13 +335,13 @@ export const Timer = ({ navigation, route }) => {
                     </View>
                 </View>
                 <View style={styles.body}>
-                    <Text
+                    {/* <Text
                         style={{
                             textTransform: 'uppercase',
                             fontWeight: 'bold',
                             fontSize: 30
                         }}
-                    >
+                    > */}
                         <CircularProgress
                             radius={160}
                             value={timerPercentage ? timerPercentage : 0}
@@ -354,6 +354,9 @@ export const Timer = ({ navigation, route }) => {
                             inActiveStrokeColor='red'
                             inActiveStrokeOpacity={0.2}
                         />
+                    {/* </Text> */}
+                    <Text>
+                        {fullMinutes}:{fullSeconds}
                     </Text>
                 </View>
                 <View style={styles.navLast}>
