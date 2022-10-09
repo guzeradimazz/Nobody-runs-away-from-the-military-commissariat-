@@ -32,6 +32,10 @@ export const Timer = ({ navigation, route }) => {
 
     const [myRender, setMyRender] = useState(0)
 
+    const timperc = (() => {
+        
+    })()
+
     const calculateTime = () => {
         const fullSecondsTemp =
             prepareSeconds + tabatas * (workSeconds + restSeconds)

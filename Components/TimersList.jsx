@@ -8,32 +8,35 @@ import {
     FlatList,
     RefreshControl,
     TouchableOpacity,
+    Modal,
     TextInput
 } from 'react-native'
 import { ThemeContext } from '../utils/themeContext'
 import { Loading } from './Loading'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import ColorPicker from 'react-native-color-picker-ios'
-
+import { ModalColorPicker } from './ModalColorPicker'
 
 export const TimersList = ({ navigation }) => {
     const theme = useContext(ThemeContext)
+
+    const [modalVisible, setModalVisible] = useState(false)
+    const [selectedColor, setSelectedColor] = useState('#000')
 
     const [timerName, setTimerName] = useState('')
     const [isLoading, setIsLoading] = useState(true)
     const [timers, setTimers] = useState([])
 
     useEffect(() => {
-        console.log(timers)
-    })
+        console.log(timers.length)
+    }, [timers])
 
-    const selectColor = () => {
-        ColorPicker.showColorPicker(
-            (color) => {
-                console.log(color)
-            }
-        )
-    }
+    useEffect(() => {
+        async function saveChangeAsyncStorage() {
+            await AsyncStorage.setItem('timers', JSON.stringify(timers))
+        }
+        saveChangeAsyncStorage()
+    }, [timers])
+    
     const addTimer = async () => {
         if (timerName) {
             const id = 'id' + Math.random().toString(16).slice(2)
@@ -43,31 +46,23 @@ export const TimersList = ({ navigation }) => {
                 workSeconds: 30,
                 restSeconds: 7,
                 tabatas: 2,
-                id: id
+                id: id,
+                color: selectedColor
             }
 
-            try {
-                timers
-                    ? setTimers([...timers, newTimer])
-                    : setTimers([newTimer])
-                const output = JSON.stringify(timers)
-                await AsyncStorage.setItem('timers', output)
-                setTimerName('')
-            } catch (error) {
-                console.log(error)
-            }
+            timers ? setTimers([...timers, newTimer]) : setTimers([newTimer])
+            await AsyncStorage.setItem('timers', JSON.stringify(timers)).catch(
+                (err) => console.log(err)
+            )
+            setTimerName('')
         } else alert('Input is empty')
     }
-    const getTimers = async () => {
-        try {
-            const data = await AsyncStorage.getItem('timers')
-            const output = JSON.parse(data)
-            setTimers(output)
-        } catch (error) {
-            console.log(error)
-        }
-    }
 
+    const getTimers = async () => {
+        await AsyncStorage.getItem('timers', (error, result) => {
+            setTimers(JSON.parse(result))
+        }).catch((err) => console.log(err))
+    }
     useEffect(() => {
         async function fetchTimers() {
             await getTimers()
@@ -137,8 +132,14 @@ export const TimersList = ({ navigation }) => {
                                 onChangeText={(data) => setTimerName(data)}
                                 style={styles.input}
                             />
+                            <ModalColorPicker
+                                color={selectedColor}
+                                setColor={setSelectedColor}
+                                modalVisible={modalVisible}
+                                setModalVisible={setModalVisible}
+                            />
                             <Pressable
-                                onPress={selectColor}
+                                onPress={() => setModalVisible(!modalVisible)}
                                 style={{
                                     backgroundColor: '#fff',
                                     height: 50,
@@ -202,7 +203,7 @@ export const TimersList = ({ navigation }) => {
                                 <View
                                     style={[
                                         styles.listItem,
-                                        { backgroundColor: theme.background }
+                                        { backgroundColor: item.color }
                                     ]}
                                 >
                                     <View style={styles.listItemWrapper}>
