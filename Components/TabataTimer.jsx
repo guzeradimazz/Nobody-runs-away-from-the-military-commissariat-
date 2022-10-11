@@ -6,172 +6,135 @@ import { ThemeContext } from '../utils/themeContext'
 import { Loading } from './Loading'
 import { BackButton } from './BackButton'
 
-export const Timer = ({ navigation, route }) => {
+export const TabataTimer = ({ navigation, route }) => {
     const theme = useContext(ThemeContext)
     const [isLoading, setIsLoading] = useState(true)
+    const [play, setPlay] = useState(false)
+    const [sound, setSound] = useState(true)
+
+    const [targetSeconds, setTargetSeconds] = useState(0)
+    const [needToCalc, setNeedToCalc] = useState(false)
 
     const { prepareSecondsIN, workSecondsIN, restSecondsIN, tabatasIN } =
         route.params
 
-    const [sound, setSound] = useState(true)
-    const [play, setPlay] = useState(false)
-
-    const [prepareSeconds, setPrepareSeconds] = useState(prepareSecondsIN)
-    const [workSeconds, setWorkSeconds] = useState(workSecondsIN)
-    const [restSeconds, setRestSeconds] = useState(restSecondsIN)
-
-    const [targetSeconds, setTargetSeconds] = useState(0)
-
-    const [tabatas, setTabatas] = useState(tabatasIN)
-
-    const [fullSeconds, setFullSeconds] = useState(0)
-    const [fullMinutes, setFullMinutes] = useState(0)
-
-    // const [timerPercentageUp, setTimerPercentageUp] = useState(1)
-    // const [timerPercentageLow, setTimerPercentageLow] = useState(1)
-    // const [timerPercentage, setTimerPercentage] = useState(100)
-
-    const [myRender, setMyRender] = useState(0)
-
-    const timperc = (() => {})()
+    const [timer, setTimer] = useState({
+        minutes: 0,
+        seconds: 0,
+        prepareSeconds: prepareSecondsIN,
+        workSeconds: workSecondsIN,
+        restSeconds: restSecondsIN,
+        tabatas: tabatasIN
+    })
 
     const calculateTime = () => {
-        const fullSecondsTemp =
-            prepareSeconds + tabatas * (workSeconds + restSeconds)
-        const temp1 = Number((fullSecondsTemp / 60).toString().split('.')[0])
-        const temp2 = Number(fullSecondsTemp - temp1 * 60)
-        setFullSeconds(temp2)
-        setFullMinutes(temp1)
-        // if (fullMinutes && fullSeconds) {
-        //     setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
-        //     setTimerPercentageLow(fullMinutes * 60 + fullSeconds)
-        //     setTimerPercentage(
-        //         Number((timerPercentageUp / timerPercentageLow) * 100).toFixed(
-        //             0
-        //         )
-        //     )
-        // }
+        const tempVariable =
+            timer.prepareSeconds +
+            timer.tabatas * (timer.workSeconds + timer.restSeconds)
+        const minutes = Number((tempVariable / 60).toString().split('.')[0])
+        const seconds = Number(tempVariable - minutes * 60)
+        setTimer((prev) => {
+            return {
+                ...prev,
+                minutes: minutes,
+                seconds: seconds
+            }
+        })
+        setNeedToCalc(false)
     }
 
-    const tempFunc = () => {
-        setMyRender(1)
+    useEffect(() => {
         calculateTime()
-    }
+    }, [])
+    useEffect(() => {
+        if (needToCalc) calculateTime()
+    }, [needToCalc])
 
     const handleIncrement = () => {
         if (targetSeconds == 1) {
-            prepareSeconds < 10
-                ? setPrepareSeconds((prev) => prev + 1)
-                : setPrepareSeconds(prepareSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 2) {
-            workSeconds < 45
-                ? setWorkSeconds((prev) => prev + 1)
-                : setWorkSeconds(workSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 3) {
-            restSeconds < 15
-                ? setRestSeconds((prev) => prev + 1)
-                : setRestSeconds(restSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 4) {
-            tabatas < 10 ? setTabatas((prev) => prev + 1) : setTabatas(tabatas)
-            calculateTime()
-            tempFunc()
+            if (timer.prepareSeconds < 10) {
+                setTimer((prev) => {
+                    return {
+                        ...prev,
+                        prepareSeconds: prev.prepareSeconds + 1
+                    }
+                })
+                setNeedToCalc(true)
+            } else setTimer((prev) => prev)
+        } else if (targetSeconds == 2) {
+            if (timer.workSeconds < 45) {
+                setTimer((prev) => {
+                    return {
+                        ...prev,
+                        workSeconds: prev.workSeconds + 1
+                    }
+                })
+                setNeedToCalc(true)
+            } else setTimer((prev) => prev)
+        } else if (targetSeconds == 3) {
+            if (timer.restSeconds < 15) {
+                setTimer((prev) => {
+                    return {
+                        ...prev,
+                        restSeconds: prev.restSeconds + 1
+                    }
+                })
+                setNeedToCalc(true)
+            } else setTimer((prev) => prev)
+        } else if (targetSeconds == 4) {
+            if (timer.tabatas < 5) {
+                setTimer((prev) => {
+                    return {
+                        ...prev,
+                        tabatas: prev.tabatas + 1
+                    }
+                })
+                setNeedToCalc(true)
+            } else setTimer((prev) => prev)
         }
     }
     const handleDecrement = () => {
         if (targetSeconds == 1) {
-            prepareSeconds > 3
-                ? setPrepareSeconds((prev) => prev - 1)
-                : setPrepareSeconds(prepareSeconds)
-            calculateTime()
-            tempFunc()
+            if (timer.prepareSeconds > 3) {
+                setTimer((prev) => {
+                    return {
+                        ...prev,
+                        prepareSeconds: prev.prepareSeconds - 1
+                    }
+                })
+                setNeedToCalc(true)
+            } else setTimer((prev) => prev)
+        } else if (targetSeconds == 2) {
+            if (timer.workSeconds > 30) {
+                setTimer((prev) => {
+                    return {
+                        ...prev,
+                        workSeconds: prev.workSeconds - 1
+                    }
+                })
+                setNeedToCalc(true)
+            } else setTimer((prev) => prev)
+        } else if (targetSeconds == 3) {
+            if (timer.restSeconds > 5) {
+                setTimer((prev) => {
+                    return {
+                        ...prev,
+                        restSeconds: prev.restSeconds - 1
+                    }
+                })
+                setNeedToCalc(true)
+            } else setTimer((prev) => prev)
+        } else if (targetSeconds == 4) {
+            if (timer.tabatas > 2) {
+                setTimer((prev) => {
+                    return {
+                        ...prev,
+                        tabatas: prev.tabatas - 1
+                    }
+                })
+                setNeedToCalc(true)
+            } else setTimer((prev) => prev)
         }
-        if (targetSeconds == 2) {
-            workSeconds > 15
-                ? setWorkSeconds((prev) => prev - 1)
-                : setWorkSeconds(workSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 3) {
-            restSeconds > 5
-                ? setRestSeconds((prev) => prev - 1)
-                : setRestSeconds(restSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 4) {
-            tabatas > 1 ? setTabatas((prev) => prev - 1) : setTabatas(tabatas)
-            calculateTime()
-            tempFunc()
-        }
-    }
-
-    useEffect(() => {
-        calculateTime()
-    }, [prepareSeconds, workSeconds, restSeconds, tabatas])
-
-    useEffect(() => {
-        calculateTime()
-        tempFunc()
-    }, [])
-
-    useEffect(() => {
-        calculateTime()
-    }, [myRender])
-
-    const updateInterval = () => {
-        if (fullSeconds > 0) {
-            setFullSeconds((prev) => prev - 1)
-            setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
-            setTimerPercentage(
-                Number((timerPercentageUp / timerPercentageLow) * 100).toFixed(
-                    0
-                )
-            )
-        } else if (fullMinutes >= 1 && fullSeconds == 0) {
-            setFullMinutes((prev) => prev - 1)
-            setFullSeconds(59)
-            setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
-            setTimerPercentage(
-                Number((timerPercentageUp / timerPercentageLow) * 100).toFixed(
-                    0
-                )
-            )
-        } else if (fullMinutes == 0 && fullSeconds == 0) {
-            setPlay(!play)
-            calculateTime()
-            alert('complete')
-            setMyRender(2)
-        }
-    }
-    useEffect(() => {
-        let interval
-        if (play) {
-            interval = setInterval(updateInterval, 300)
-        }
-        if (!play) clearInterval(interval)
-        return () => {
-            clearInterval(interval)
-        }
-    }, [play, fullSeconds])
-
-    const resetTabata = () => {
-        setPlay(false)
-        setPrepareSeconds(3)
-        setWorkSeconds(30)
-        setRestSeconds(10)
-        setTargetSeconds(0)
-        setTabatas(2)
-        calculateTime()
     }
 
     if (isLoading) {
@@ -211,7 +174,7 @@ export const Timer = ({ navigation, route }) => {
                                 }
                             ]}
                             onPress={() => {
-                                setTargetSeconds(1)
+                                setTargetSeconds((prev) => (prev = 1))
                             }}
                         >
                             <Text
@@ -225,7 +188,7 @@ export const Timer = ({ navigation, route }) => {
                                 Prepare
                             </Text>
                             <Text style={{ color: theme.color }}>
-                                {prepareSeconds}
+                                {timer.prepareSeconds}
                             </Text>
                         </Ripple>
                         <Ripple
@@ -241,7 +204,7 @@ export const Timer = ({ navigation, route }) => {
                                 }
                             ]}
                             onPress={() => {
-                                setTargetSeconds(2)
+                                setTargetSeconds((prev) => (prev = 2))
                             }}
                         >
                             <Text
@@ -255,7 +218,7 @@ export const Timer = ({ navigation, route }) => {
                                 work
                             </Text>
                             <Text style={{ color: theme.color }}>
-                                {workSeconds}
+                                {timer.workSeconds}
                             </Text>
                         </Ripple>
                         <Ripple
@@ -271,7 +234,7 @@ export const Timer = ({ navigation, route }) => {
                                 }
                             ]}
                             onPress={() => {
-                                setTargetSeconds(3)
+                                setTargetSeconds((prev) => (prev = 3))
                             }}
                         >
                             <Text
@@ -285,7 +248,7 @@ export const Timer = ({ navigation, route }) => {
                                 rest
                             </Text>
                             <Text style={{ color: theme.color }}>
-                                {restSeconds}
+                                {timer.restSeconds}
                             </Text>
                         </Ripple>
                     </View>
@@ -304,7 +267,7 @@ export const Timer = ({ navigation, route }) => {
                                 { backgroundColor: theme.background }
                             ]}
                             onPress={() => {
-                                setTargetSeconds(4)
+                                setTargetSeconds((prev) => (prev = 4))
                             }}
                         >
                             <Text
@@ -318,26 +281,14 @@ export const Timer = ({ navigation, route }) => {
                                 tabatas
                             </Text>
                             <Text style={{ color: theme.color }}>
-                                {tabatas}
+                                {timer.tabatas}
                             </Text>
                         </Ripple>
                     </View>
                 </View>
                 <View style={styles.body}>
-                    {/* <CircularProgress
-                            radius={160}
-                            value={timerPercentage ? timerPercentage : 0}
-                            textColor='#222'
-                            fontSize={30}
-                            title={`${fullMinutes}:${fullSeconds}`}
-                            titleColor={theme.color}
-                            titleStyle={{ fontWeight: 'bold' }}
-                            valueSuffix={'%'}
-                            inActiveStrokeColor='red'
-                            inActiveStrokeOpacity={0.2}
-                        /> */}
                     <Text style={{ color: theme.color }}>
-                        {fullMinutes}:{fullSeconds}
+                        {timer.minutes}:{timer.seconds}
                     </Text>
                 </View>
                 <View style={styles.navLast}>
@@ -423,7 +374,6 @@ export const Timer = ({ navigation, route }) => {
                             styles.timerBtnLow,
                             { backgroundColor: theme.background }
                         ]}
-                        onPress={resetTabata}
                     >
                         <Image
                             style={styles.picture}

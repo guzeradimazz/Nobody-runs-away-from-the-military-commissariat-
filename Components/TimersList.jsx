@@ -8,13 +8,13 @@ import {
     FlatList,
     RefreshControl,
     TouchableOpacity,
-    Modal,
     TextInput
 } from 'react-native'
 import { ThemeContext } from '../utils/themeContext'
 import { Loading } from './Loading'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { ModalColorPicker } from './ModalColorPicker'
+import { BackButton } from './BackButton'
 
 export const TimersList = ({ navigation }) => {
     const theme = useContext(ThemeContext)
@@ -26,16 +26,25 @@ export const TimersList = ({ navigation }) => {
     const [isLoading, setIsLoading] = useState(true)
     const [timers, setTimers] = useState([])
 
-    useEffect(() => {
-        console.log(timers.length)
-    }, [timers])
+    async function fetchTimers() {
+        setIsLoading(true)
+        await getTimers()
+        setIsLoading(false)
+    }
 
     useEffect(() => {
-        async function saveChangeAsyncStorage() {
-            await AsyncStorage.setItem('timers', JSON.stringify(timers))
-        }
-        saveChangeAsyncStorage()
-    }, [timers])
+        fetchTimers()
+    }, [])
+
+    const deleteTimer = async (item) => {
+        const parsedData = await AsyncStorage.getItem('timers')
+        const filteredData = JSON.parse(parsedData).filter((i) => {
+            return i.id != item.id
+        })
+        AsyncStorage.clear()
+        setTimers(filteredData)
+        await AsyncStorage.setItem('timers', JSON.stringify(filteredData))
+    }
     
     const addTimer = async () => {
         if (timerName) {
@@ -51,25 +60,19 @@ export const TimersList = ({ navigation }) => {
             }
 
             timers ? setTimers([...timers, newTimer]) : setTimers([newTimer])
-            await AsyncStorage.setItem('timers', JSON.stringify(timers)).catch(
-                (err) => console.log(err)
-            )
+            await AsyncStorage.setItem(
+                'timers',
+                JSON.stringify([...timers, newTimer])
+            ).catch((err) => console.log(err))
             setTimerName('')
         } else alert('Input is empty')
     }
 
     const getTimers = async () => {
-        await AsyncStorage.getItem('timers', (error, result) => {
+        await AsyncStorage.getItem('timers', (err, result) => {
             setTimers(JSON.parse(result))
         }).catch((err) => console.log(err))
     }
-    useEffect(() => {
-        async function fetchTimers() {
-            await getTimers()
-            setIsLoading(false)
-        }
-        fetchTimers()
-    }, [])
 
     if (isLoading) return <Loading />
     else
@@ -80,36 +83,16 @@ export const TimersList = ({ navigation }) => {
                     { backgroundColor: theme.background }
                 ]}
             >
-                <View style={styles.containerLine}>
-                    <Pressable
-                        style={[
-                            styles.mainScreenButton,
-                            { backgroundColor: theme.background }
-                        ]}
-                        onPress={() => {
-                            navigation.navigate('Home')
-                        }}
-                    >
-                        <View
-                            style={{
-                                justifyContent: 'center',
-                                alignItems: 'center'
-                            }}
-                        >
-                            <Image
-                                style={styles.picture}
-                                source={{
-                                    uri: 'https://cdn-icons-png.flaticon.com/512/93/93634.png'
-                                }}
-                            />
-                        </View>
-                    </Pressable>
-                </View>
+                <BackButton
+                    onPress={() => navigation.navigate('Home')}
+                    theme={theme}
+                />
                 <View
                     style={{
                         flex: 1,
                         width: '90%',
                         height: '80%',
+                        marginTop: '30%',
                         alignItems: 'center'
                     }}
                 >
@@ -141,14 +124,18 @@ export const TimersList = ({ navigation }) => {
                             <Pressable
                                 onPress={() => setModalVisible(!modalVisible)}
                                 style={{
-                                    backgroundColor: '#fff',
                                     height: 50,
-                                    borderRadius: 5,
                                     justifyContent: 'center',
                                     width: '20%'
                                 }}
                             >
-                                <Text style={{ textAlign: 'center' }}>
+                                <Text
+                                    style={{
+                                        textAlign: 'center',
+                                        color: theme.color,
+                                        fontSize: 22
+                                    }}
+                                >
                                     Color
                                 </Text>
                             </Pressable>
@@ -181,12 +168,12 @@ export const TimersList = ({ navigation }) => {
                         marginBottom={50}
                         width={350}
                         height={100}
-                        // refreshControl={
-                        //     <RefreshControl
-                        //         refreshing={isLoading}
-                        //         onRefresh={fetchTimers}
-                        //     />
-                        // }
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={isLoading}
+                                onRefresh={fetchTimers}
+                            />
+                        }
                         extraData={timers}
                         data={timers}
                         renderItem={({ item }) => (
@@ -207,11 +194,21 @@ export const TimersList = ({ navigation }) => {
                                     ]}
                                 >
                                     <View style={styles.listItemWrapper}>
-                                        <Text
-                                            style={[, { color: theme.color }]}
-                                        >
+                                        <Text style={[{ color: '#fff' }]}>
                                             {item.name}
                                         </Text>
+                                        <Pressable
+                                            onPress={() => {
+                                                deleteTimer(item)
+                                            }}
+                                        >
+                                            <Image
+                                                style={styles.picture}
+                                                source={{
+                                                    uri: 'https://cdn-icons-png.flaticon.com/512/1828/1828843.png'
+                                                }}
+                                            />
+                                        </Pressable>
                                     </View>
                                 </View>
                             </TouchableOpacity>

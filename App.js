@@ -9,6 +9,7 @@ import { EventRegister } from 'react-native-event-listeners'
 import { ThemeContext } from './utils/themeContext'
 import { theme } from './utils/themeContext'
 import { TimersList } from './Components/TimersList'
+import { TabataTimer } from './Components/TabataTimer'
 
 const Stack = createNativeStackNavigator()
 
@@ -42,7 +43,7 @@ export default function App() {
                         {(props) => <TimersList {...props} />}
                     </Stack.Screen>
                     <Stack.Screen name='Timer'>
-                        {(props) => <Timer {...props} />}
+                        {(props) => <TabataTimer {...props} />}
                     </Stack.Screen>
                     <Stack.Screen name='Settings'>
                         {(props) => <Settings {...props} />}
