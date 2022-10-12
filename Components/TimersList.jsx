@@ -45,7 +45,7 @@ export const TimersList = ({ navigation }) => {
         setTimers(filteredData)
         await AsyncStorage.setItem('timers', JSON.stringify(filteredData))
     }
-    
+
     const addTimer = async () => {
         if (timerName) {
             const id = 'id' + Math.random().toString(16).slice(2)
@@ -59,11 +59,17 @@ export const TimersList = ({ navigation }) => {
                 color: selectedColor
             }
 
-            timers ? setTimers([...timers, newTimer]) : setTimers([newTimer])
-            await AsyncStorage.setItem(
-                'timers',
-                JSON.stringify([...timers, newTimer])
-            ).catch((err) => console.log(err))
+            try {
+                timers
+                    ? setTimers([...timers, newTimer])
+                    : setTimers([newTimer])
+                await AsyncStorage.setItem(
+                    'timers',
+                    JSON.stringify([...timers, newTimer])
+                )
+            } catch (err) {
+                console.log(err)
+            }
             setTimerName('')
         } else alert('Input is empty')
     }

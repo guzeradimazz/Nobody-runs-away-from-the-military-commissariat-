@@ -33,88 +33,11 @@ export const Timer = ({ navigation, route }) => {
 
     const [myRender, setMyRender] = useState(0)
 
-    const timperc = (() => {})()
-
-    const calculateTime = () => {
-        const fullSecondsTemp =
-            prepareSeconds + tabatas * (workSeconds + restSeconds)
-        const temp1 = Number((fullSecondsTemp / 60).toString().split('.')[0])
-        const temp2 = Number(fullSecondsTemp - temp1 * 60)
-        setFullSeconds(temp2)
-        setFullMinutes(temp1)
-        // if (fullMinutes && fullSeconds) {
-        //     setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
-        //     setTimerPercentageLow(fullMinutes * 60 + fullSeconds)
-        //     setTimerPercentage(
-        //         Number((timerPercentageUp / timerPercentageLow) * 100).toFixed(
-        //             0
-        //         )
-        //     )
-        // }
-    }
 
     const tempFunc = () => {
         setMyRender(1)
         calculateTime()
     }
-
-    const handleIncrement = () => {
-        if (targetSeconds == 1) {
-            prepareSeconds < 10
-                ? setPrepareSeconds((prev) => prev + 1)
-                : setPrepareSeconds(prepareSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 2) {
-            workSeconds < 45
-                ? setWorkSeconds((prev) => prev + 1)
-                : setWorkSeconds(workSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 3) {
-            restSeconds < 15
-                ? setRestSeconds((prev) => prev + 1)
-                : setRestSeconds(restSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 4) {
-            tabatas < 10 ? setTabatas((prev) => prev + 1) : setTabatas(tabatas)
-            calculateTime()
-            tempFunc()
-        }
-    }
-    const handleDecrement = () => {
-        if (targetSeconds == 1) {
-            prepareSeconds > 3
-                ? setPrepareSeconds((prev) => prev - 1)
-                : setPrepareSeconds(prepareSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 2) {
-            workSeconds > 15
-                ? setWorkSeconds((prev) => prev - 1)
-                : setWorkSeconds(workSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 3) {
-            restSeconds > 5
-                ? setRestSeconds((prev) => prev - 1)
-                : setRestSeconds(restSeconds)
-            calculateTime()
-            tempFunc()
-        }
-        if (targetSeconds == 4) {
-            tabatas > 1 ? setTabatas((prev) => prev - 1) : setTabatas(tabatas)
-            calculateTime()
-            tempFunc()
-        }
-    }
-
     useEffect(() => {
         calculateTime()
     }, [prepareSeconds, workSeconds, restSeconds, tabatas])
@@ -131,21 +54,9 @@ export const Timer = ({ navigation, route }) => {
     const updateInterval = () => {
         if (fullSeconds > 0) {
             setFullSeconds((prev) => prev - 1)
-            setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
-            setTimerPercentage(
-                Number((timerPercentageUp / timerPercentageLow) * 100).toFixed(
-                    0
-                )
-            )
         } else if (fullMinutes >= 1 && fullSeconds == 0) {
             setFullMinutes((prev) => prev - 1)
             setFullSeconds(59)
-            setTimerPercentageUp(fullMinutes * 60 + fullSeconds)
-            setTimerPercentage(
-                Number((timerPercentageUp / timerPercentageLow) * 100).toFixed(
-                    0
-                )
-            )
         } else if (fullMinutes == 0 && fullSeconds == 0) {
             setPlay(!play)
             calculateTime()
@@ -476,80 +387,3 @@ export const Timer = ({ navigation, route }) => {
         )
 }
 
-const styles = StyleSheet.create({
-    timerBtnLow: {
-        backgroundColor: '#e3f6fa',
-        height: 50,
-        width: 50,
-        shadowColor: '#000',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.6,
-        shadowRadius: 5,
-        borderRadius: 15,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    timerBtn: {
-        backgroundColor: '#e3f6fa',
-        height: 60,
-        width: 100,
-        shadowColor: '#000',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.6,
-        shadowRadius: 5,
-        borderRadius: 15,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    body: {
-        width: '80%',
-        height: 300,
-        marginTop: 0,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    navs: {
-        flexDirection: 'column',
-        width: '80%',
-        height: '20%',
-        marginTop: 80,
-        justifyContent: 'center'
-    },
-    navLast: {
-        width: '80%',
-        marginBottom: 30,
-        height: 50,
-        flexDirection: 'row',
-        justifyContent: 'space-around'
-    },
-    nav: {
-        backgroundColor: '#e3f6fa',
-        height: 50,
-        marginBottom: 30,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center'
-    },
-    picture2: {
-        width: 35,
-        height: 35
-    },
-    picture: {
-        width: 40,
-        height: 40
-    },
-    container: {
-        flex: 1,
-        backgroundColor: '#e3f6fa',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'relative'
-    },
-    textLtl: {
-        color: '#524d3e',
-        fontWeight: 'bold',
-        fontSize: 20,
-        textTransform: 'uppercase',
-        textAlign: 'center'
-    }
-})

@@ -1,23 +1,51 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { View, Text, Pressable, StyleSheet, Image } from 'react-native'
-import Ripple from 'react-native-material-ripple'
-import CircularProgress from 'react-native-circular-progress-indicator'
+import { View, Text, StyleSheet } from 'react-native'
 import { ThemeContext } from '../utils/themeContext'
 import { Loading } from './Loading'
 import { BackButton } from './BackButton'
+import { Audio } from 'expo-av'
+import { ButtonForTimer, ButtonForNavbar } from './Buttons'
 
 export const TabataTimer = ({ navigation, route }) => {
+    // States
     const theme = useContext(ThemeContext)
+
     const [isLoading, setIsLoading] = useState(true)
     const [play, setPlay] = useState(false)
     const [sound, setSound] = useState(true)
+    const [beep2, setBeep] = useState()
 
     const [targetSeconds, setTargetSeconds] = useState(0)
     const [needToCalc, setNeedToCalc] = useState(false)
 
+    const [stage, setStage] = useState({ color: '#fff', stage: 'wait' })
+    const [counterCycles, setCounterCycles] = useState(0)
     const { prepareSecondsIN, workSecondsIN, restSecondsIN, tabatasIN } =
         route.params
 
+    let beepInterval
+
+    const playSound = async () => {
+        if (!sound) {
+            const { beep } = await Audio.Sound.createAsync(
+                require('../assets/sound/beep.mp3'),
+                { shouldPlay: true }
+            )
+            setBeep(beep)
+            try {
+                await beep2.playAsync()
+            } catch (err) {}
+        }
+    }
+    const startBeepInterval = () => {
+        let countOfBeep = timer.prepareSeconds
+
+        beepInterval = setInterval(() => {
+            countOfBeep--
+            if (!countOfBeep) clearInterval(beepInterval)
+            playSound()
+        }, 1000)
+    }
     const [timer, setTimer] = useState({
         minutes: 0,
         seconds: 0,
@@ -42,14 +70,31 @@ export const TabataTimer = ({ navigation, route }) => {
         })
         setNeedToCalc(false)
     }
+    const updateInterval = () => {
 
-    useEffect(() => {
-        calculateTime()
-    }, [])
-    useEffect(() => {
-        if (needToCalc) calculateTime()
-    }, [needToCalc])
+        setCounterCycles((prev) => prev + 1)
 
+        if (timer.seconds > 0) {
+            setTimer((prev) => {
+                return {
+                    ...prev,
+                    seconds: prev.seconds - 1
+                }
+            })
+        } else if (timer.seconds == 0 && timer.minutes >= 1) {
+            setTimer((prev) => {
+                return {
+                    ...prev,
+                    minutes: prev.minutes - 1,
+                    seconds: 59
+                }
+            })
+        } else if (timer.seconds == 0 && timer.minutes == 0) {
+            alert('COMPLETE')
+            setNeedToCalc(true)
+            setPlay((prev) => !prev)
+        }
+    }
     const handleIncrement = () => {
         if (targetSeconds == 1) {
             if (timer.prepareSeconds < 10) {
@@ -137,6 +182,67 @@ export const TabataTimer = ({ navigation, route }) => {
         }
     }
 
+    // Useeffect
+
+    useEffect(() => {
+        return beep2
+            ? () => {
+                  beep2.unloadAsync()
+              }
+            : undefined
+    }, [beep2])
+
+    useEffect(() => {
+        calculateTime()
+        setCounterCycles(0)
+    }, [])
+
+    useEffect(() => {
+        if (needToCalc) calculateTime()
+    }, [needToCalc])
+
+    useEffect(() => {
+        console.log(`counter : ${counterCycles}`);
+        if (counterCycles <= timer.prepareSeconds) {
+            setStage((prev) => {
+                return {
+                    ...prev,
+                    color: 'pink',
+                    stage: 'prepare'
+                }
+            })
+        } else {
+            const tempVar =
+                (counterCycles - timer.prepareSeconds) %
+                (timer.workSeconds + timer.restSeconds)
+            if (tempVar <= timer.workSeconds) {
+                setStage((prev) => {
+                    return {
+                        ...prev,
+                        color: 'yellow',
+                        stage: 'work'
+                    }
+                })
+            } else {
+                setStage((prev) => {
+                    return {
+                        ...prev,
+                        color: 'orange',
+                        stage: 'prepare'
+                    }
+                })
+            }
+        }
+    }, [counterCycles])
+
+    useEffect(() => {
+        let interval
+        if (play) {
+            interval = setInterval(updateInterval, 1000)
+        } else clearInterval(interval)
+        return () => clearInterval(interval)
+    }, [play, timer])
+
     if (isLoading) {
         setTimeout(() => {
             setIsLoading(false)
@@ -161,96 +267,33 @@ export const TabataTimer = ({ navigation, route }) => {
                             { backgroundColor: theme.background }
                         ]}
                     >
-                        <Ripple
-                            disabled={play ? true : false}
-                            rippleDuration={1200}
-                            rippleColor={theme.rippleColor}
-                            style={[
-                                styles.timerBtn,
-                                {
-                                    backgroundColor: theme.background,
-                                    shadowColor: 'blue',
-                                    shadowOpacity: 0.8
-                                }
-                            ]}
+                        <ButtonForNavbar
                             onPress={() => {
                                 setTargetSeconds((prev) => (prev = 1))
                             }}
-                        >
-                            <Text
-                                style={{
-                                    color: theme.color,
-                                    textTransform: 'uppercase',
-                                    fontWeight: 'bold',
-                                    fontSize: 17
-                                }}
-                            >
-                                Prepare
-                            </Text>
-                            <Text style={{ color: theme.color }}>
-                                {timer.prepareSeconds}
-                            </Text>
-                        </Ripple>
-                        <Ripple
-                            disabled={play ? true : false}
-                            rippleDuration={1200}
-                            rippleColor={theme.rippleColor}
-                            style={[
-                                styles.timerBtn,
-                                {
-                                    backgroundColor: theme.background,
-                                    shadowColor: 'pink',
-                                    shadowOpacity: 0.8
-                                }
-                            ]}
+                            shadowColor='pink'
+                            theme={theme}
+                            title='Prepare'
+                            seconds={timer.prepareSeconds}
+                        />
+                        <ButtonForNavbar
                             onPress={() => {
                                 setTargetSeconds((prev) => (prev = 2))
                             }}
-                        >
-                            <Text
-                                style={{
-                                    color: theme.color,
-                                    textTransform: 'uppercase',
-                                    fontWeight: 'bold',
-                                    fontSize: 17
-                                }}
-                            >
-                                work
-                            </Text>
-                            <Text style={{ color: theme.color }}>
-                                {timer.workSeconds}
-                            </Text>
-                        </Ripple>
-                        <Ripple
-                            disabled={play ? true : false}
-                            rippleDuration={1200}
-                            rippleColor={theme.rippleColor}
-                            style={[
-                                styles.timerBtn,
-                                {
-                                    backgroundColor: theme.background,
-                                    shadowColor: 'red',
-                                    shadowOpacity: 0.8
-                                }
-                            ]}
+                            shadowColor='yellow'
+                            theme={theme}
+                            title='work'
+                            seconds={timer.workSeconds}
+                        />
+                        <ButtonForNavbar
                             onPress={() => {
                                 setTargetSeconds((prev) => (prev = 3))
                             }}
-                        >
-                            <Text
-                                style={{
-                                    color: theme.color,
-                                    textTransform: 'uppercase',
-                                    fontWeight: 'bold',
-                                    fontSize: 17
-                                }}
-                            >
-                                rest
-                            </Text>
-                            <Text style={{ color: theme.color }}>
-                                {timer.restSeconds}
-                            </Text>
-                        </Ripple>
+                            shadowColor='orange'
+                            theme={theme}
+                            title='rest'
+                            seconds={timer.restSeconds}
+                        />
                     </View>
                     <View
                         style={[
@@ -258,168 +301,94 @@ export const TabataTimer = ({ navigation, route }) => {
                             { backgroundColor: theme.background }
                         ]}
                     >
-                        <Ripple
-                            disabled={play ? true : false}
-                            rippleDuration={1200}
-                            rippleColor={theme.rippleColor}
-                            style={[
-                                styles.timerBtn,
-                                { backgroundColor: theme.background }
-                            ]}
+                        <ButtonForNavbar
                             onPress={() => {
                                 setTargetSeconds((prev) => (prev = 4))
                             }}
-                        >
-                            <Text
-                                style={{
-                                    color: theme.color,
-                                    textTransform: 'uppercase',
-                                    fontWeight: 'bold',
-                                    fontSize: 17
-                                }}
-                            >
-                                tabatas
-                            </Text>
-                            <Text style={{ color: theme.color }}>
-                                {timer.tabatas}
-                            </Text>
-                        </Ripple>
+                            shadowColor='#34ebd2'
+                            theme={theme}
+                            title='tabatas'
+                            seconds={timer.tabatas}
+                        />
                     </View>
                 </View>
                 <View style={styles.body}>
-                    <Text style={{ color: theme.color }}>
+                    <Text
+                        style={{ color: stage.color }}
+                        // style={{ color: theme.color }}
+                    >
                         {timer.minutes}:{timer.seconds}
                     </Text>
                 </View>
                 <View style={styles.navLast}>
-                    <Ripple
-                        disabled={play ? true : false}
-                        rippleDuration={1200}
-                        rippleColor={theme.rippleColor}
-                        style={[
-                            styles.timerBtnLow,
-                            { backgroundColor: theme.background }
-                        ]}
+                    <ButtonForTimer
+                        img={
+                            'https://cdn-icons-png.flaticon.com/512/2801/2801932.png'
+                        }
+                        theme={theme}
+                        play={play}
                         onPress={handleDecrement}
-                    >
-                        <Image
-                            style={styles.picture2}
-                            source={{
-                                uri: 'https://cdn-icons-png.flaticon.com/512/2801/2801932.png'
-                            }}
-                        />
-                    </Ripple>
-                    <Ripple
-                        disabled={play ? true : false}
-                        rippleDuration={1200}
-                        rippleColor={theme.rippleColor}
-                        style={[
-                            styles.timerBtnLow,
-                            { backgroundColor: theme.background }
-                        ]}
+                    />
+                    <ButtonForTimer
+                        img={
+                            'https://cdn-icons-png.flaticon.com/512/748/748113.png'
+                        }
+                        theme={theme}
+                        play={play}
                         onPress={handleIncrement}
-                    >
-                        <Image
-                            style={styles.picture2}
-                            source={{
-                                uri: 'https://cdn-icons-png.flaticon.com/512/748/748113.png'
-                            }}
-                        />
-                    </Ripple>
+                    />
                 </View>
                 <View style={styles.navLast}>
                     {play ? (
-                        <Ripple
-                            rippleDuration={1200}
-                            rippleColor={theme.rippleColor}
-                            style={[
-                                styles.timerBtnLow,
-                                { backgroundColor: theme.background }
-                            ]}
+                        <ButtonForTimer
+                            img={
+                                'https://cdn-icons-png.flaticon.com/512/2920/2920686.png'
+                            }
+                            theme={theme}
                             onPress={() => {
                                 setPlay(!play)
-                            }}
-                        >
-                            <Image
-                                style={styles.picture2}
-                                source={{
-                                    uri: 'https://cdn-icons-png.flaticon.com/512/2920/2920686.png'
-                                }}
-                            />
-                        </Ripple>
-                    ) : (
-                        <Ripple
-                            rippleDuration={1200}
-                            rippleColor={theme.rippleColor}
-                            style={[
-                                styles.timerBtnLow,
-                                { backgroundColor: theme.background }
-                            ]}
-                            onPress={() => {
-                                setPlay(!play)
-                            }}
-                        >
-                            <Image
-                                style={styles.picture2}
-                                source={{
-                                    uri: 'https://cdn-icons-png.flaticon.com/512/5577/5577228.png'
-                                }}
-                            />
-                        </Ripple>
-                    )}
-                    <Ripple
-                        rippleDuration={1200}
-                        rippleColor={theme.rippleColor}
-                        style={[
-                            styles.timerBtnLow,
-                            { backgroundColor: theme.background }
-                        ]}
-                    >
-                        <Image
-                            style={styles.picture}
-                            source={{
-                                uri: 'https://cdn-icons-png.flaticon.com/512/2618/2618245.png'
+                                clearInterval(beepInterval)
                             }}
                         />
-                    </Ripple>
-                    {sound ? (
-                        <Ripple
-                            rippleDuration={1200}
-                            rippleColor={theme.rippleColor}
-                            style={[
-                                styles.timerBtnLow,
-                                { backgroundColor: theme.background }
-                            ]}
-                            onPress={() => {
-                                setSound(!sound)
-                            }}
-                        >
-                            <Image
-                                style={styles.picture}
-                                source={{
-                                    uri: 'https://cdn-icons-png.flaticon.com/512/727/727240.png'
-                                }}
-                            />
-                        </Ripple>
                     ) : (
-                        <Ripple
-                            rippleDuration={1200}
-                            rippleColor={theme.rippleColor}
-                            style={[
-                                styles.timerBtnLow,
-                                { backgroundColor: theme.background }
-                            ]}
+                        <ButtonForTimer
+                            img={
+                                'https://cdn-icons-png.flaticon.com/512/5577/5577228.png'
+                            }
+                            theme={theme}
+                            onPress={() => {
+                                setPlay(!play)
+                                startBeepInterval()
+                            }}
+                        />
+                    )}
+                    <ButtonForTimer
+                        img={
+                            'https://cdn-icons-png.flaticon.com/512/2618/2618245.png'
+                        }
+                        theme={theme}
+                        onPress={() => {}}
+                    />
+                    {sound ? (
+                        <ButtonForTimer
+                            img={
+                                'https://cdn-icons-png.flaticon.com/512/727/727240.png'
+                            }
+                            theme={theme}
                             onPress={() => {
                                 setSound(!sound)
                             }}
-                        >
-                            <Image
-                                style={styles.picture}
-                                source={{
-                                    uri: 'https://cdn-icons-png.flaticon.com/512/59/59284.png'
-                                }}
-                            />
-                        </Ripple>
+                        />
+                    ) : (
+                        <ButtonForTimer
+                            img={
+                                'https://cdn-icons-png.flaticon.com/512/59/59284.png'
+                            }
+                            theme={theme}
+                            onPress={() => {
+                                setSound(!sound)
+                            }}
+                        />
                     )}
                 </View>
             </View>
@@ -427,30 +396,6 @@ export const TabataTimer = ({ navigation, route }) => {
 }
 
 const styles = StyleSheet.create({
-    timerBtnLow: {
-        backgroundColor: '#e3f6fa',
-        height: 50,
-        width: 50,
-        shadowColor: '#000',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.6,
-        shadowRadius: 5,
-        borderRadius: 15,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    timerBtn: {
-        backgroundColor: '#e3f6fa',
-        height: 60,
-        width: 100,
-        shadowColor: '#000',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.6,
-        shadowRadius: 5,
-        borderRadius: 15,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
     body: {
         width: '80%',
         height: 300,
@@ -480,26 +425,14 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center'
     },
-    picture2: {
-        width: 35,
-        height: 35
-    },
     picture: {
         width: 40,
         height: 40
     },
     container: {
         flex: 1,
-        backgroundColor: '#e3f6fa',
         alignItems: 'center',
         justifyContent: 'space-between',
         position: 'relative'
-    },
-    textLtl: {
-        color: '#524d3e',
-        fontWeight: 'bold',
-        fontSize: 20,
-        textTransform: 'uppercase',
-        textAlign: 'center'
     }
 })
