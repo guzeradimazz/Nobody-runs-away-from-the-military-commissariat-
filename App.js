@@ -1,9 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Home } from './Components/Home'
-import { Timer } from './Components/Timer'
 import { Settings } from './Components/Settings'
-
 import { useState, useEffect } from 'react'
 import { EventRegister } from 'react-native-event-listeners'
 import { ThemeContext } from './utils/themeContext'

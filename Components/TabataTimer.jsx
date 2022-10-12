@@ -5,6 +5,7 @@ import { Loading } from './Loading'
 import { BackButton } from './BackButton'
 import { Audio } from 'expo-av'
 import { ButtonForTimer, ButtonForNavbar } from './Buttons'
+import CircularProgress from 'react-native-circular-progress-indicator'
 
 export const TabataTimer = ({ navigation, route }) => {
     // States
@@ -71,7 +72,6 @@ export const TabataTimer = ({ navigation, route }) => {
         setNeedToCalc(false)
     }
     const updateInterval = () => {
-
         setCounterCycles((prev) => prev + 1)
 
         if (timer.seconds > 0) {
@@ -93,6 +93,13 @@ export const TabataTimer = ({ navigation, route }) => {
             alert('COMPLETE')
             setNeedToCalc(true)
             setPlay((prev) => !prev)
+            setStage((prev) => {
+                return {
+                    ...prev,
+                    color: 'pink',
+                    stage: 'prepare'
+                }
+            })
         }
     }
     const handleIncrement = () => {
@@ -202,7 +209,6 @@ export const TabataTimer = ({ navigation, route }) => {
     }, [needToCalc])
 
     useEffect(() => {
-        console.log(`counter : ${counterCycles}`);
         if (counterCycles <= timer.prepareSeconds) {
             setStage((prev) => {
                 return {
@@ -228,7 +234,7 @@ export const TabataTimer = ({ navigation, route }) => {
                     return {
                         ...prev,
                         color: 'orange',
-                        stage: 'prepare'
+                        stage: 'rest'
                     }
                 })
             }
@@ -313,12 +319,34 @@ export const TabataTimer = ({ navigation, route }) => {
                     </View>
                 </View>
                 <View style={styles.body}>
-                    <Text
+                    <View
+                        style={[
+                            styles.backCircleShadow,
+                            {
+                                shadowColor: stage.color,
+                                borderColor: stage.color
+                            }
+                        ]}
+                    ></View>
+                    <CircularProgress
+                        activeStrokeColor={stage.color}
+                        progressValueColor={stage.color}
+                        radius={160}
+                        value={100}
+                        fontSize={30}
+                        title={`${timer.minutes}:${timer.seconds}`}
+                        titleColor={stage.color}
+                        titleStyle={{ fontWeight: 'bold' }}
+                        valueSuffix={'%'}
+                        inActiveStrokeColor={theme.background}
+                        inActiveStrokeOpacity={0.2}
+                    />
+                    {/* <Text
                         style={{ color: stage.color }}
                         // style={{ color: theme.color }}
                     >
                         {timer.minutes}:{timer.seconds}
-                    </Text>
+                    </Text> */}
                 </View>
                 <View style={styles.navLast}>
                     <ButtonForTimer
@@ -396,6 +424,18 @@ export const TabataTimer = ({ navigation, route }) => {
 }
 
 const styles = StyleSheet.create({
+    backCircleShadow: {
+        width: 320,
+        height: 320,
+        position: 'absolute',
+        zIndex: 2,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        borderWidth: 10,
+        shadowRadius: 9,
+        elevation: 14,
+        borderRadius: '160%'
+    },
     body: {
         width: '80%',
         height: 300,
