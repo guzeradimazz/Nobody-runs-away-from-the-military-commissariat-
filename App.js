@@ -9,10 +9,13 @@ import { theme } from './utils/themeContext'
 import { TimersList } from './Components/TimersList'
 import { TabataTimer } from './Components/TabataTimer'
 
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 const Stack = createNativeStackNavigator()
 
 export default function App() {
     const [mode, setMode] = useState(false)
+    const [locale,setLocale] = useState(true)
 
     useEffect(() => {
         let eventListener = EventRegister.addEventListener(
@@ -35,16 +38,16 @@ export default function App() {
                     }}
                 >
                     <Stack.Screen name='Home'>
-                        {(props) => <Home {...props} />}
+                        {(props) => <Home {...props} locale={locale} />}
                     </Stack.Screen>
                     <Stack.Screen name='TimersList'>
-                        {(props) => <TimersList {...props} />}
+                        {(props) => <TimersList {...props} AsyncStorage={AsyncStorage} locale={locale}/>}
                     </Stack.Screen>
                     <Stack.Screen name='Timer'>
-                        {(props) => <TabataTimer {...props} />}
+                        {(props) => <TabataTimer {...props} locale={locale} />}
                     </Stack.Screen>
                     <Stack.Screen name='Settings'>
-                        {(props) => <Settings {...props} />}
+                        {(props) => <Settings {...props} AsyncStorage={AsyncStorage} locale={locale} setLocale={setLocale}/>}
                     </Stack.Screen>
                 </Stack.Navigator>
             </NavigationContainer>

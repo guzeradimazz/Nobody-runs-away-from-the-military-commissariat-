@@ -7,17 +7,20 @@ import { Audio } from 'expo-av'
 import { ButtonForTimer, ButtonForNavbar } from './Buttons'
 import CircularProgress from 'react-native-circular-progress-indicator'
 
-export const TabataTimer = ({ navigation, route }) => {
+export const TabataTimer = ({ navigation, route, locale }) => {
     // States
     const theme = useContext(ThemeContext)
 
     const [isLoading, setIsLoading] = useState(true)
+
     const [play, setPlay] = useState(false)
     const [sound, setSound] = useState(true)
     const [beep2, setBeep] = useState()
 
     const [targetSeconds, setTargetSeconds] = useState(0)
     const [needToCalc, setNeedToCalc] = useState(false)
+
+    const [needToPlaySound, setNeedToPlaySound] = useState(false)
 
     const [stage, setStage] = useState({ color: '#fff', stage: 'wait' })
     const [counterCycles, setCounterCycles] = useState(0)
@@ -188,6 +191,26 @@ export const TabataTimer = ({ navigation, route }) => {
             } else setTimer((prev) => prev)
         }
     }
+    const handleReset = () => {
+        setTimer((prev) => {
+            return {
+                ...prev,
+                prepareSeconds: prepareSecondsIN,
+                workSeconds: workSecondsIN,
+                restSeconds: restSecondsIN,
+                tabatas: tabatasIN
+            }
+        })
+        setNeedToCalc(true)
+        setStage((prev) => {
+            return {
+                ...prev,
+                color: 'pink',
+                stage: 'prepare'
+            }
+        })
+        setPlay(false)
+    }
 
     // Useeffect
 
@@ -209,7 +232,15 @@ export const TabataTimer = ({ navigation, route }) => {
     }, [needToCalc])
 
     useEffect(() => {
+        if (needToPlaySound) {
+            console.log(needToPlaySound)
+            setNeedToPlaySound(false)
+        }
+    }, [needToPlaySound])
+
+    useEffect(() => {
         if (counterCycles <= timer.prepareSeconds) {
+            setNeedToPlaySound(true)
             setStage((prev) => {
                 return {
                     ...prev,
@@ -222,6 +253,7 @@ export const TabataTimer = ({ navigation, route }) => {
                 (counterCycles - timer.prepareSeconds) %
                 (timer.workSeconds + timer.restSeconds)
             if (tempVar <= timer.workSeconds) {
+                setNeedToPlaySound(true)
                 setStage((prev) => {
                     return {
                         ...prev,
@@ -279,7 +311,7 @@ export const TabataTimer = ({ navigation, route }) => {
                             }}
                             shadowColor='pink'
                             theme={theme}
-                            title='Prepare'
+                            title={locale ? 'Prepare' : 'Разогрев'}
                             seconds={timer.prepareSeconds}
                         />
                         <ButtonForNavbar
@@ -288,7 +320,7 @@ export const TabataTimer = ({ navigation, route }) => {
                             }}
                             shadowColor='yellow'
                             theme={theme}
-                            title='work'
+                            title={locale ? 'Work' : 'Работа'}
                             seconds={timer.workSeconds}
                         />
                         <ButtonForNavbar
@@ -297,7 +329,7 @@ export const TabataTimer = ({ navigation, route }) => {
                             }}
                             shadowColor='orange'
                             theme={theme}
-                            title='rest'
+                            title={locale ? 'Rest' : 'Отдых'}
                             seconds={timer.restSeconds}
                         />
                     </View>
@@ -313,7 +345,7 @@ export const TabataTimer = ({ navigation, route }) => {
                             }}
                             shadowColor='#34ebd2'
                             theme={theme}
-                            title='tabatas'
+                            title={locale ? 'tabatas' :'Табаты'}
                             seconds={timer.tabatas}
                         />
                     </View>
@@ -395,7 +427,7 @@ export const TabataTimer = ({ navigation, route }) => {
                             'https://cdn-icons-png.flaticon.com/512/2618/2618245.png'
                         }
                         theme={theme}
-                        onPress={() => {}}
+                        onPress={handleReset}
                     />
                     {sound ? (
                         <ButtonForTimer
@@ -445,7 +477,7 @@ const styles = StyleSheet.create({
     },
     navs: {
         flexDirection: 'column',
-        width: '80%',
+        width: '90%',
         height: '20%',
         marginTop: 80,
         justifyContent: 'center'
@@ -460,6 +492,7 @@ const styles = StyleSheet.create({
     nav: {
         backgroundColor: '#e3f6fa',
         height: 50,
+        width: '100%',
         marginBottom: 30,
         flexDirection: 'row',
         justifyContent: 'space-around',

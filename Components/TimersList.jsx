@@ -12,11 +12,10 @@ import {
 } from 'react-native'
 import { ThemeContext } from '../utils/themeContext'
 import { Loading } from './Loading'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { ModalColorPicker } from './ModalColorPicker'
 import { BackButton } from './BackButton'
 
-export const TimersList = ({ navigation }) => {
+export const TimersList = ({ navigation, AsyncStorage, locale }) => {
     const theme = useContext(ThemeContext)
 
     const [modalVisible, setModalVisible] = useState(false)
@@ -47,7 +46,7 @@ export const TimersList = ({ navigation }) => {
     }
 
     const addTimer = async () => {
-        if (timerName) {
+        if (timerName.trim()) {
             const id = 'id' + Math.random().toString(16).slice(2)
             const newTimer = {
                 name: timerName,
@@ -142,7 +141,7 @@ export const TimersList = ({ navigation }) => {
                                         fontSize: 22
                                     }}
                                 >
-                                    Color
+                                    {locale ? 'Color' : 'Цвет'}
                                 </Text>
                             </Pressable>
                         </View>
@@ -162,7 +161,7 @@ export const TimersList = ({ navigation }) => {
                                 }}
                                 t
                             >
-                                Add
+                                {locale ? 'Add' : 'Добавить'}
                             </Text>
                         </Pressable>
                     </View>

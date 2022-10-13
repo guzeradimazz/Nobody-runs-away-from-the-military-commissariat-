@@ -2,19 +2,25 @@ import React, { useContext } from 'react'
 import { View, StyleSheet, Text, Pressable, Image } from 'react-native'
 import { ThemeContext } from '../utils/themeContext'
 
-export const Home = ({ navigation }) => {
-
+export const Home = ({ navigation, locale }) => {
     const theme = useContext(ThemeContext)
     return (
-        <View style={[styles.container,{backgroundColor:theme.background}]}>
-            <Text style={[styles.text,{color:theme.color}]}>Tabata timer</Text>
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <Text style={[styles.text, { color: theme.color }]}>
+                {locale ? 'Tabata timer' : 'Табата таймер'}
+            </Text>
             <Pressable
-                style={[styles.mainScreenButton,{backgroundColor:theme.background,}]}
+                style={[
+                    styles.mainScreenButton,
+                    { backgroundColor: theme.background }
+                ]}
                 onPress={() => navigation.navigate('TimersList')}
             >
                 <View style={{ justifyContent: 'center' }}>
-                    <Text style={[styles.textLtl,{color:theme.color}]}>
-                        Get started coach potato!
+                    <Text style={[styles.textLtl, { color: theme.color }]}>
+                        {locale
+                            ? 'Get started coach potato!'
+                            : 'Начнем тренироваться!'}  
                     </Text>
                 </View>
             </Pressable>
