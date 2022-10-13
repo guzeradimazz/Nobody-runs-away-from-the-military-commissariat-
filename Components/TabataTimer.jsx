@@ -17,10 +17,16 @@ export const TabataTimer = ({ navigation, route, locale }) => {
     const [sound, setSound] = useState(true)
     const [beep2, setBeep] = useState()
 
+    const [percent, setPercent] = useState({
+        percent: 100,
+        percentUp: 1,
+        percentLow: 1
+    })
+
     const [targetSeconds, setTargetSeconds] = useState(0)
     const [needToCalc, setNeedToCalc] = useState(false)
 
-    const [needToPlaySound, setNeedToPlaySound] = useState(false)
+    // const [needToPlaySound, setNeedToPlaySound] = usлоeState(false)
 
     const [stage, setStage] = useState({ color: '#fff', stage: 'wait' })
     const [counterCycles, setCounterCycles] = useState(0)
@@ -72,11 +78,17 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                 seconds: seconds
             }
         })
+
         setNeedToCalc(false)
     }
     const updateInterval = () => {
         setCounterCycles((prev) => prev + 1)
-
+        setPercent((prev) => {
+            return {
+                ...prev,
+                percentUp: timer.minutes * 60 + timer.seconds
+            }
+        })
         if (timer.seconds > 0) {
             setTimer((prev) => {
                 return {
@@ -101,6 +113,12 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                     ...prev,
                     color: 'pink',
                     stage: 'prepare'
+                }
+            })
+            setPercent((prev) => {
+                return {
+                    ...prev,
+                    percent: 100
                 }
             })
         }
@@ -215,6 +233,15 @@ export const TabataTimer = ({ navigation, route, locale }) => {
     // Useeffect
 
     useEffect(() => {
+        setPercent((prev) => {
+            return {
+                ...prev,
+                percent: Math.round((prev.percentUp / prev.percentLow) * 100)
+            }
+        })
+    }, [percent.percentUp])
+    
+    useEffect(() => {
         return beep2
             ? () => {
                   beep2.unloadAsync()
@@ -223,24 +250,29 @@ export const TabataTimer = ({ navigation, route, locale }) => {
     }, [beep2])
 
     useEffect(() => {
-        calculateTime()
+        setNeedToCalc(true)
         setCounterCycles(0)
     }, [])
 
     useEffect(() => {
         if (needToCalc) calculateTime()
+        setPercent((prev) => {
+            return {
+                ...prev,
+                percentLow: timer.minutes * 60 + timer.seconds
+            }
+        })
     }, [needToCalc])
 
-    useEffect(() => {
-        if (needToPlaySound) {
-            console.log(needToPlaySound)
-            setNeedToPlaySound(false)
-        }
-    }, [needToPlaySound])
+    // useEffect(() => {
+    //     if (needToPlaySound) {
+    //         console.log(needToPlaySound)
+    //         setNeedToPlaySound(false)
+    //     }
+    // }, [needToPlaySound])
 
     useEffect(() => {
         if (counterCycles <= timer.prepareSeconds) {
-            setNeedToPlaySound(true)
             setStage((prev) => {
                 return {
                     ...prev,
@@ -253,7 +285,6 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                 (counterCycles - timer.prepareSeconds) %
                 (timer.workSeconds + timer.restSeconds)
             if (tempVar <= timer.workSeconds) {
-                setNeedToPlaySound(true)
                 setStage((prev) => {
                     return {
                         ...prev,
@@ -345,7 +376,7 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                             }}
                             shadowColor='#34ebd2'
                             theme={theme}
-                            title={locale ? 'tabatas' :'Табаты'}
+                            title={locale ? 'tabatas' : 'Табаты'}
                             seconds={timer.tabatas}
                         />
                     </View>
@@ -364,21 +395,15 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                         activeStrokeColor={stage.color}
                         progressValueColor={stage.color}
                         radius={160}
-                        value={100}
+                        value={percent.percent}
                         fontSize={30}
                         title={`${timer.minutes}:${timer.seconds}`}
                         titleColor={stage.color}
                         titleStyle={{ fontWeight: 'bold' }}
                         valueSuffix={'%'}
-                        inActiveStrokeColor={theme.background}
+                        inActiveStrokeColor='#000'
                         inActiveStrokeOpacity={0.2}
                     />
-                    {/* <Text
-                        style={{ color: stage.color }}
-                        // style={{ color: theme.color }}
-                    >
-                        {timer.minutes}:{timer.seconds}
-                    </Text> */}
                 </View>
                 <View style={styles.navLast}>
                     <ButtonForTimer
@@ -460,7 +485,7 @@ const styles = StyleSheet.create({
         width: 320,
         height: 320,
         position: 'absolute',
-        zIndex: 2,
+        zIndex: 0,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 1,
         borderWidth: 10,
