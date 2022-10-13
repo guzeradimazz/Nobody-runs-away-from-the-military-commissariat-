@@ -7,7 +7,7 @@ import { Audio } from 'expo-av'
 import { ButtonForTimer, ButtonForNavbar } from './Buttons'
 import CircularProgress from 'react-native-circular-progress-indicator'
 
-export const TabataTimer = ({ navigation, route, locale }) => {
+export const TabataTimer = ({ navigation, route, locale, AsyncStorage }) => {
     // States
     const theme = useContext(ThemeContext)
 
@@ -16,6 +16,11 @@ export const TabataTimer = ({ navigation, route, locale }) => {
     const [play, setPlay] = useState(false)
     const [sound, setSound] = useState(true)
     const [beep2, setBeep] = useState()
+
+    const [timers, setTimers] = useState({
+        timersWithoutCurrent: [],
+        currentTimer: {}
+    })
 
     const [percent, setPercent] = useState({
         percent: 100,
@@ -26,14 +31,16 @@ export const TabataTimer = ({ navigation, route, locale }) => {
     const [targetSeconds, setTargetSeconds] = useState(0)
     const [needToCalc, setNeedToCalc] = useState(false)
 
-    // const [needToPlaySound, setNeedToPlaySound] = usлоeState(false)
-
     const [stage, setStage] = useState({ color: '#fff', stage: 'wait' })
     const [counterCycles, setCounterCycles] = useState(0)
-    const { prepareSecondsIN, workSecondsIN, restSecondsIN, tabatasIN } =
-        route.params
-
-    let beepInterval
+    const {
+        prepareSecondsIN,
+        workSecondsIN,
+        restSecondsIN,
+        tabatasIN,
+        idIN,
+        nameIN
+    } = route.params
 
     const playSound = async () => {
         if (!sound) {
@@ -47,24 +54,28 @@ export const TabataTimer = ({ navigation, route, locale }) => {
             } catch (err) {}
         }
     }
-    const startBeepInterval = () => {
-        let countOfBeep = timer.prepareSeconds
 
-        beepInterval = setInterval(() => {
-            countOfBeep--
-            if (!countOfBeep) clearInterval(beepInterval)
-            playSound()
-        }, 1000)
-    }
     const [timer, setTimer] = useState({
         minutes: 0,
         seconds: 0,
-        prepareSeconds: prepareSecondsIN,
-        workSeconds: workSecondsIN,
-        restSeconds: restSecondsIN,
-        tabatas: tabatasIN
+        prepareSeconds: 0,
+        workSeconds: 0,
+        restSeconds: 0,
+        tabatas: 0
     })
 
+    const saveTimers = async () => {
+        AsyncStorage.clear()
+        await AsyncStorage.setItem(
+            'timers',
+            JSON.stringify([
+                ...timers.timersWithoutCurrent,
+                timers.currentTimer
+            ])
+        )
+
+        navigation.navigate('TimersList')
+    }
     const calculateTime = () => {
         const tempVariable =
             timer.prepareSeconds +
@@ -78,7 +89,6 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                 seconds: seconds
             }
         })
-
         setNeedToCalc(false)
     }
     const updateInterval = () => {
@@ -131,6 +141,12 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                         ...prev,
                         prepareSeconds: prev.prepareSeconds + 1
                     }
+                })
+                //todo
+                setTimers((prev) => {
+                    const copy = prev
+                    copy.currentTimer.prepareSeconds += 1
+                    return copy
                 })
                 setNeedToCalc(true)
             } else setTimer((prev) => prev)
@@ -210,6 +226,8 @@ export const TabataTimer = ({ navigation, route, locale }) => {
         }
     }
     const handleReset = () => {
+        setPlay(false)
+        setCounterCycles(0)
         setTimer((prev) => {
             return {
                 ...prev,
@@ -217,6 +235,12 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                 workSeconds: workSecondsIN,
                 restSeconds: restSecondsIN,
                 tabatas: tabatasIN
+            }
+        })
+        setPercent((prev) => {
+            return {
+                ...prev,
+                percent: 100
             }
         })
         setNeedToCalc(true)
@@ -227,9 +251,26 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                 stage: 'prepare'
             }
         })
-        setPlay(false)
     }
 
+    const getTimers = async () => {
+        await AsyncStorage.getItem('timers', (err, result) => {
+            const data = JSON.parse(result)
+            const currentItem = data.filter((item) => {
+                return item.id == idIN
+            })
+            const withoutCurrent = data.filter((item) => {
+                return item.id != idIN
+            })
+            setTimers((prev) => {
+                return {
+                    ...prev,
+                    timersWithoutCurrent: withoutCurrent,
+                    currentTimer: currentItem[0]
+                }
+            })
+        }).catch((err) => console.log(err))
+    }
     // Useeffect
 
     useEffect(() => {
@@ -240,7 +281,7 @@ export const TabataTimer = ({ navigation, route, locale }) => {
             }
         })
     }, [percent.percentUp])
-    
+
     useEffect(() => {
         return beep2
             ? () => {
@@ -250,9 +291,22 @@ export const TabataTimer = ({ navigation, route, locale }) => {
     }, [beep2])
 
     useEffect(() => {
-        setNeedToCalc(true)
+        getTimers()
         setCounterCycles(0)
     }, [])
+
+    useEffect(() => {
+        setTimer((prev) => {
+            return {
+                ...prev,
+                prepareSeconds: timers.currentTimer.prepareSeconds,
+                workSeconds: timers.currentTimer.workSeconds,
+                restSeconds: timers.currentTimer.restSeconds,
+                tabatas: timers.currentTimer.tabatas
+            }
+        })
+        setNeedToCalc(true)
+    }, [timers.currentTimer])
 
     useEffect(() => {
         if (needToCalc) calculateTime()
@@ -264,12 +318,9 @@ export const TabataTimer = ({ navigation, route, locale }) => {
         })
     }, [needToCalc])
 
-    // useEffect(() => {
-    //     if (needToPlaySound) {
-    //         console.log(needToPlaySound)
-    //         setNeedToPlaySound(false)
-    //     }
-    // }, [needToPlaySound])
+    useEffect(() => {
+        playSound()
+    }, [stage.stage])
 
     useEffect(() => {
         if (counterCycles <= timer.prepareSeconds) {
@@ -325,10 +376,7 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                     { backgroundColor: theme.background }
                 ]}
             >
-                <BackButton
-                    onPress={() => navigation.navigate('TimersList')}
-                    theme={theme}
-                />
+                <BackButton onPress={saveTimers} theme={theme} />
                 <View style={styles.navs}>
                     <View
                         style={[
@@ -432,7 +480,6 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                             theme={theme}
                             onPress={() => {
                                 setPlay(!play)
-                                clearInterval(beepInterval)
                             }}
                         />
                     ) : (
@@ -443,7 +490,6 @@ export const TabataTimer = ({ navigation, route, locale }) => {
                             theme={theme}
                             onPress={() => {
                                 setPlay(!play)
-                                startBeepInterval()
                             }}
                         />
                     )}

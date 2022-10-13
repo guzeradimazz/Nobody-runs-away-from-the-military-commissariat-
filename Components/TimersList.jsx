@@ -116,6 +116,7 @@ export const TimersList = ({ navigation, AsyncStorage, locale }) => {
                             }}
                         >
                             <TextInput
+                                maxLength={20}
                                 value={timerName}
                                 onChangeText={(data) => setTimerName(data)}
                                 style={styles.input}
@@ -188,7 +189,9 @@ export const TimersList = ({ navigation, AsyncStorage, locale }) => {
                                         prepareSecondsIN: item.prepareSeconds,
                                         workSecondsIN: item.workSeconds,
                                         restSecondsIN: item.restSeconds,
-                                        tabatasIN: item.tabatas
+                                        tabatasIN: item.tabatas,
+                                        idIN: item.id,
+                                        nameIN: item.name
                                     })
                                 }}
                             >

@@ -44,7 +44,7 @@ export default function App() {
                         {(props) => <TimersList {...props} AsyncStorage={AsyncStorage} locale={locale}/>}
                     </Stack.Screen>
                     <Stack.Screen name='Timer'>
-                        {(props) => <TabataTimer {...props} locale={locale} />}
+                        {(props) => <TabataTimer {...props} locale={locale} AsyncStorage={AsyncStorage} />}
                     </Stack.Screen>
                     <Stack.Screen name='Settings'>
                         {(props) => <Settings {...props} AsyncStorage={AsyncStorage} locale={locale} setLocale={setLocale}/>}
