@@ -142,7 +142,6 @@ export const TabataTimer = ({ navigation, route, locale, AsyncStorage }) => {
                         prepareSeconds: prev.prepareSeconds + 1
                     }
                 })
-                //todo
                 setTimers((prev) => {
                     const copy = prev
                     copy.currentTimer.prepareSeconds += 1
@@ -158,6 +157,11 @@ export const TabataTimer = ({ navigation, route, locale, AsyncStorage }) => {
                         workSeconds: prev.workSeconds + 1
                     }
                 })
+                setTimers((prev) => {
+                    const copy = prev
+                    copy.currentTimer.workSeconds += 1
+                    return copy
+                })
                 setNeedToCalc(true)
             } else setTimer((prev) => prev)
         } else if (targetSeconds == 3) {
@@ -168,6 +172,11 @@ export const TabataTimer = ({ navigation, route, locale, AsyncStorage }) => {
                         restSeconds: prev.restSeconds + 1
                     }
                 })
+                setTimers((prev) => {
+                    const copy = prev
+                    copy.currentTimer.restSeconds += 1
+                    return copy
+                })
                 setNeedToCalc(true)
             } else setTimer((prev) => prev)
         } else if (targetSeconds == 4) {
@@ -177,6 +186,11 @@ export const TabataTimer = ({ navigation, route, locale, AsyncStorage }) => {
                         ...prev,
                         tabatas: prev.tabatas + 1
                     }
+                })
+                setTimers((prev) => {
+                    const copy = prev
+                    copy.currentTimer.tabatas += 1
+                    return copy
                 })
                 setNeedToCalc(true)
             } else setTimer((prev) => prev)
@@ -191,6 +205,11 @@ export const TabataTimer = ({ navigation, route, locale, AsyncStorage }) => {
                         prepareSeconds: prev.prepareSeconds - 1
                     }
                 })
+                setTimers((prev) => {
+                    const copy = prev
+                    copy.currentTimer.prepareSeconds -= 1
+                    return copy
+                })
                 setNeedToCalc(true)
             } else setTimer((prev) => prev)
         } else if (targetSeconds == 2) {
@@ -200,6 +219,11 @@ export const TabataTimer = ({ navigation, route, locale, AsyncStorage }) => {
                         ...prev,
                         workSeconds: prev.workSeconds - 1
                     }
+                })
+                setTimers((prev) => {
+                    const copy = prev
+                    copy.currentTimer.workSeconds -= 1
+                    return copy
                 })
                 setNeedToCalc(true)
             } else setTimer((prev) => prev)
@@ -211,6 +235,11 @@ export const TabataTimer = ({ navigation, route, locale, AsyncStorage }) => {
                         restSeconds: prev.restSeconds - 1
                     }
                 })
+                setTimers((prev) => {
+                    const copy = prev
+                    copy.currentTimer.restSeconds -= 1
+                    return copy
+                })
                 setNeedToCalc(true)
             } else setTimer((prev) => prev)
         } else if (targetSeconds == 4) {
@@ -220,6 +249,11 @@ export const TabataTimer = ({ navigation, route, locale, AsyncStorage }) => {
                         ...prev,
                         tabatas: prev.tabatas - 1
                     }
+                })
+                setTimers((prev) => {
+                    const copy = prev
+                    copy.currentTimer.tabatas -= 1
+                    return copy
                 })
                 setNeedToCalc(true)
             } else setTimer((prev) => prev)
@@ -445,7 +479,11 @@ export const TabataTimer = ({ navigation, route, locale, AsyncStorage }) => {
                         radius={160}
                         value={percent.percent}
                         fontSize={30}
-                        title={`${timer.minutes}:${timer.seconds}`}
+                        title={
+                            timer.seconds < 10
+                                ? `${timer.minutes}:0${timer.seconds}`
+                                : `${timer.minutes}:${timer.seconds}`
+                        }
                         titleColor={stage.color}
                         titleStyle={{ fontWeight: 'bold' }}
                         valueSuffix={'%'}
